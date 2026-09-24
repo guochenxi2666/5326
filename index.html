@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>简历筛选与速析 · 粉色工作台</title>
+<title>简历筛选与速析 · 粉蓝工作台</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
@@ -17,9 +17,9 @@
     --primary: #e75480;
     --primary-light: #f4a7c0;
     --primary-dark: #c23a68;
-    --bg-main: #fdf7f9;
+    --bg-main: #eef5fb;
     --bg-card: rgba(255, 255, 255, 0.92);
-    --bg-card-solid: #fdeef3;
+    --bg-card-solid: #e4eef8;
     --bg-section: rgba(255, 255, 255, 0.75);
     --text-primary: #2b1e24;
     --text-secondary: #8a6d78;
@@ -33,8 +33,8 @@
     --glow-cyan: rgba(255, 143, 179, 0.2);
     --border-subtle: rgba(0, 0, 0, 0.1);
     /* resume-analyzer 兼容变量 */
-    --bg: #fdf7f9; --card: #ffffff; --line: #f3e4e9; --ink: #2b1e24; --sub: #8a6d78;
-    --brand: #e75480; --brand-soft: #fdeef3; --good: #1a9e5c; --good-soft: #e7f6ee;
+    --bg: #eef5fb; --card: #ffffff; --line: #dce8f4; --ink: #2b1e24; --sub: #8a6d78;
+    --brand: #e75480; --brand-soft: #e3eef9; --good: #1a9e5c; --good-soft: #e7f6ee;
     --warn: #e08600; --warn-soft: #fdf2e0; --bad: #d9372b; --bad-soft: #fdeceb;
     --muted: #b69aa6; --radius: 12px;
 }
@@ -54,9 +54,9 @@ body::before {
     width: 100%;
     height: 100%;
     background:
-        radial-gradient(ellipse at 20% 20%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 80%, rgba(255, 143, 179, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(209, 107, 158, 0.03) 0%, transparent 70%);
+        radial-gradient(ellipse at 20% 20%, rgba(125, 176, 226, 0.16) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(143, 194, 238, 0.08) 0%, transparent 70%);
     pointer-events: none;
     z-index: -1;
 }
@@ -76,7 +76,7 @@ body::after {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #e75480 0%, #c23a68 100%);
+  background: linear-gradient(135deg, #e75480 0%, #7fb2e5 100%);
   color: #fff;
   padding: 18px 28px;
   display: flex;
@@ -84,7 +84,7 @@ body::after {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  box-shadow: 0 4px 20px rgba(231, 84, 128, 0.3);
+  box-shadow: 0 4px 20px rgba(127, 178, 229, 0.35);
   position: sticky;
   top: 0;
   z-index: 1500;
@@ -105,7 +105,7 @@ body::after {
 .tool-panel.active { display: block; }
 #tool-analyzer { padding: 0 0 60px; }
 
-/* ========== BJAK 智能简历筛选系统（粉色化） ========== */
+/* ========== 智能简历筛选系统（粉蓝化） ========== */
 
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
 
@@ -119,9 +119,9 @@ body::after {
     --primary: #e75480;
     --primary-light: #f4a7c0;
     --primary-dark: #c23a68;
-    --bg-main: #fdf7f9;
+    --bg-main: #eef5fb;
     --bg-card: rgba(255, 255, 255, 0.92);
-    --bg-card-solid: #fdeef3;
+    --bg-card-solid: #e4eef8;
     --bg-section: rgba(255, 255, 255, 0.75);
     --text-primary: #2b1e24;
     --text-secondary: #8a6d78;
@@ -135,8 +135,8 @@ body::after {
     --glow-cyan: rgba(255, 143, 179, 0.2);
     --border-subtle: rgba(0, 0, 0, 0.1);
     /* resume-analyzer 兼容变量 */
-    --bg: #fdf7f9; --card: #ffffff; --line: #f3e4e9; --ink: #2b1e24; --sub: #8a6d78;
-    --brand: #e75480; --brand-soft: #fdeef3; --good: #1a9e5c; --good-soft: #e7f6ee;
+    --bg: #eef5fb; --card: #ffffff; --line: #dce8f4; --ink: #2b1e24; --sub: #8a6d78;
+    --brand: #e75480; --brand-soft: #e3eef9; --good: #1a9e5c; --good-soft: #e7f6ee;
     --warn: #e08600; --warn-soft: #fdf2e0; --bad: #d9372b; --bad-soft: #fdeceb;
     --muted: #b69aa6; --radius: 12px;
 }
@@ -158,9 +158,9 @@ body::after {
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(ellipse at 20% 20%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(255, 143, 179, 0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(209, 107, 158, 0.03) 0%, transparent 70%);
+                radial-gradient(ellipse at 20% 20%, rgba(125, 176, 226, 0.16) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(143, 194, 238, 0.08) 0%, transparent 70%);
             pointer-events: none;
             z-index: -1;
         }
@@ -201,7 +201,7 @@ body::after {
             transform: translateX(-50%);
             width: 80%;
             height: 100%;
-            background: linear-gradient(180deg, rgba(231, 84, 128, 0.08) 0%, transparent 100%);
+            background: linear-gradient(180deg, rgba(127, 178, 229, 0.12) 0%, transparent 100%);
             border-radius: 0;
             z-index: -1;
         }
@@ -321,7 +321,7 @@ body::after {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(231, 84, 128, 0.1) 0%, transparent 100%);
+            background: linear-gradient(135deg, rgba(127, 178, 229, 0.16) 0%, transparent 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -388,7 +388,7 @@ body::after {
         }
 
         .job-tag {
-            background: rgba(231, 84, 128, 0.08);
+            background: rgba(127, 178, 229, 0.14);
             border: none;
             padding: 4px 12px;
             border-radius: 0;
@@ -397,7 +397,7 @@ body::after {
         }
 
         .job-card.selected .job-tag {
-            background: rgba(255, 143, 179, 0.15);
+            background: rgba(143, 194, 238, 0.20);
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
         }
@@ -481,7 +481,7 @@ body::after {
         }
 
         .smart-mode {
-            background: rgba(231, 84, 128, 0.06);
+            background: rgba(127, 178, 229, 0.10);
             border: none;
             border-radius: 0;
             padding: 20px;
@@ -566,7 +566,7 @@ body::after {
             text-align: center;
             cursor: pointer;
             transition: all 0.4s ease;
-            background: rgba(231, 84, 128, 0.06);
+            background: rgba(127, 178, 229, 0.10);
             position: relative;
             overflow: hidden;
         }
@@ -587,7 +587,7 @@ body::after {
 
         .upload-area:hover, .upload-area.dragover {
             border-color: var(--accent-cyan);
-            background: rgba(255, 143, 179, 0.08);
+            background: rgba(143, 194, 238, 0.14);
             box-shadow: 0 0 40px var(--glow-cyan), inset 0 0 60px rgba(255, 143, 179, 0.05);
         }
 
@@ -791,7 +791,7 @@ body::after {
 
         .results-section .section-title { color: #2b1e24; }
         .results-section .stat-card {
-            background: #fdeef3;
+            background: #e4eef8;
             border: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
@@ -805,9 +805,9 @@ body::after {
             background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
         }
         .results-section .sort-select {
-            background: #fdeef3;
-            color: #5b4250;
-            border-color: #f3e4e9;
+            background: #e4eef8;
+            color: #44586e;
+            border-color: #dce8f4;
         }
         .results-section .candidate-card {
             background: #ffffff;
@@ -1080,7 +1080,7 @@ body::after {
         }
 
         .candidate-summary {
-            background: rgba(253, 238, 243, 0.85);
+            background: rgba(228, 238, 248, 0.85);
             border: none;
             border-radius: 0;
             padding: 18px;
@@ -1134,7 +1134,7 @@ body::after {
         }
 
         .detail-section {
-            background: rgba(253, 238, 243, 0.85);
+            background: rgba(228, 238, 248, 0.85);
             border: none;
             border-radius: 0;
             padding: 22px;
@@ -1246,7 +1246,7 @@ body::after {
         }
 
         .matched-job {
-            background: rgba(231, 84, 128, 0.15);
+            background: rgba(127, 178, 229, 0.18);
             border: none;
             padding: 6px 14px;
             border-radius: 0;
@@ -1266,7 +1266,7 @@ body::after {
         }
 
         .evaluation-section {
-            background: rgba(253, 238, 243, 0.85);
+            background: rgba(228, 238, 248, 0.85);
             border: none;
             border-radius: 0;
             padding: 22px;
@@ -1414,7 +1414,7 @@ body::after {
             width: 40px;
             height: 40px;
             border: none;
-            background: #fdeef3;
+            background: #e4eef8;
             border-radius: 0;
             font-size: 1.8rem;
             cursor: pointer;
@@ -1426,7 +1426,7 @@ body::after {
         }
 
         .modal-close:hover {
-            background: #f3e4e9;
+            background: #dce8f4;
             transform: rotate(90deg);
         }
 
@@ -1449,7 +1449,7 @@ body::after {
             padding: 8px 16px;
             border: none;
             border-radius: 0;
-            background: #fdeef3;
+            background: #e4eef8;
             color: #8a6d78;
             cursor: pointer;
             font-size: 0.85rem;
@@ -1459,7 +1459,7 @@ body::after {
         }
 
         .jd-tab:hover {
-            background: #f3e4e9;
+            background: #dce8f4;
             color: #2b1e24;
         }
 
@@ -1495,7 +1495,7 @@ body::after {
             border-radius: 0;
             font-size: 0.95rem;
             transition: all 0.3s ease;
-            background: #fdeef3;
+            background: #e4eef8;
             color: #2b1e24;
             font-family: 'Noto Sans SC', sans-serif;
         }
@@ -1571,7 +1571,7 @@ body::after {
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 0; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
     
-/* ========== 简历速析 · Resume Analyzer（粉色系，容器隔离） ========== */
+/* ========== 简历速析 · Resume Analyzer（粉蓝系，容器隔离） ========== */
 
   
   
@@ -1657,14 +1657,14 @@ body::after {
 <header class="app-header">
   <div>
     <div class="app-title">简历筛选与速析工作台</div>
-    <div class="app-sub">BJAK 智能简历筛选系统 · 简历速析 Resume Analyzer · 粉色主题合并版</div>
+    <div class="app-sub">智能简历筛选系统 · 简历速析 Resume Analyzer · 粉蓝主题合并版</div>
   </div>
   <nav class="tab-nav">
-    <button class="tab-btn active" data-tool="bjak">BJAK 智能简历筛选</button>
-    <button class="tab-btn" data-tool="analyzer">简历速析</button>
+    <button class="tab-btn" data-tool="bjak">智能简历筛选</button>
+    <button class="tab-btn active" data-tool="analyzer">简历速析</button>
   </nav>
 </header>
-<div id="tool-bjak" class="tool-panel active">
+<div id="tool-bjak" class="tool-panel">
 
     <div class="container">
         <header class="header">
@@ -1686,7 +1686,7 @@ body::after {
                 </div>
                 <div class="header-line"></div>
             </div>
-            <h1>BJAK 智能简历筛选系统</h1>
+            <h1>智能简历筛选系统</h1>
             <p>AI-Powered Resume Screening · 支持岗位JD编辑</p>
         </header>
 
@@ -1835,7 +1835,7 @@ body::after {
     
 
 </div>
-<div id="tool-analyzer" class="tool-panel">
+<div id="tool-analyzer" class="tool-panel active">
 
 <header>
   <div>
@@ -1954,13 +1954,13 @@ if (window.pdfjsLib) {
 
         function saveJobsToStorage() {
             try {
-                localStorage.setItem('bjak_jobs', JSON.stringify(JOBS));
+                localStorage.setItem('resume_jobs', JSON.stringify(JOBS));
             } catch (e) {}
         }
 
         function loadJobsFromStorage() {
             try {
-                var stored = localStorage.getItem('bjak_jobs');
+                var stored = localStorage.getItem('resume_jobs');
                 if (stored) {
                     var parsed = JSON.parse(stored);
                     if (Array.isArray(parsed) && parsed.length > 0) {
@@ -2728,7 +2728,7 @@ if (window.pdfjsLib) {
             var link = document.createElement('a');
             var url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', 'BJAK_简历筛选结果_' + new Date().toISOString().slice(0, 10) + '.csv');
+            link.setAttribute('download', '简历筛选结果_' + new Date().toISOString().slice(0, 10) + '.csv');
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
