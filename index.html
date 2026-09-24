@@ -1,12 +1,112 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BJAK 智能简历筛选系统 - 可编辑JD版</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>简历筛选与速析 · 粉色工作台</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+:root {
+    --primary: #e75480;
+    --primary-light: #f4a7c0;
+    --primary-dark: #c23a68;
+    --bg-main: #fdf7f9;
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --bg-card-solid: #fdeef3;
+    --bg-section: rgba(255, 255, 255, 0.75);
+    --text-primary: #2b1e24;
+    --text-secondary: #8a6d78;
+    --text-muted: #b69aa6;
+    --accent-cyan: #ff8fb3;
+    --accent-purple: #d16b9e;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --glow-primary: rgba(231, 84, 128, 0.2);
+    --glow-cyan: rgba(255, 143, 179, 0.2);
+    --border-subtle: rgba(0, 0, 0, 0.1);
+    /* resume-analyzer 兼容变量 */
+    --bg: #fdf7f9; --card: #ffffff; --line: #f3e4e9; --ink: #2b1e24; --sub: #8a6d78;
+    --brand: #e75480; --brand-soft: #fdeef3; --good: #1a9e5c; --good-soft: #e7f6ee;
+    --warn: #e08600; --warn-soft: #fdf2e0; --bad: #d9372b; --bad-soft: #fdeceb;
+    --muted: #b69aa6; --radius: 12px;
+}
+body {
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-main);
+    min-height: 100vh;
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 20% 20%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(255, 143, 179, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(209, 107, 158, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #e75480 0%, #c23a68 100%);
+  color: #fff;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 20px rgba(231, 84, 128, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 1500;
+}
+.app-title { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+.app-sub { font-size: 12px; opacity: 0.88; margin-top: 2px; }
+.tab-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab-btn {
+  background: rgba(255,255,255,0.16); color: #fff;
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 20px; padding: 8px 18px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all 0.25s ease; font-family: inherit;
+}
+.tab-btn:hover { background: rgba(255,255,255,0.3); }
+.tab-btn.active { background: #fff; color: #e75480; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+.tool-panel { display: none; }
+.tool-panel.active { display: block; }
+#tool-analyzer { padding: 0 0 60px; }
+
+/* ========== BJAK 智能简历筛选系统（粉色化） ========== */
+
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
 
         * {
@@ -16,25 +116,30 @@
         }
 
         :root {
-            --primary: #181DD8;
-            --primary-light: #99ACFF;
-            --primary-dark: #001B96;
-            --bg-main: #ffffff;
-            --bg-card: rgba(255, 255, 255, 0.9);
-            --bg-card-solid: #f8f9fc;
-            --bg-section: rgba(255, 255, 255, 0.7);
-            --text-primary: #1a1a2e;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --accent-cyan: #00D9FF;
-            --accent-purple: #A855F7;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --glow-primary: rgba(24, 29, 216, 0.2);
-            --glow-cyan: rgba(0, 217, 255, 0.2);
-            --border-subtle: rgba(0, 0, 0, 0.1);
-        }
+    --primary: #e75480;
+    --primary-light: #f4a7c0;
+    --primary-dark: #c23a68;
+    --bg-main: #fdf7f9;
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --bg-card-solid: #fdeef3;
+    --bg-section: rgba(255, 255, 255, 0.75);
+    --text-primary: #2b1e24;
+    --text-secondary: #8a6d78;
+    --text-muted: #b69aa6;
+    --accent-cyan: #ff8fb3;
+    --accent-purple: #d16b9e;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --glow-primary: rgba(231, 84, 128, 0.2);
+    --glow-cyan: rgba(255, 143, 179, 0.2);
+    --border-subtle: rgba(0, 0, 0, 0.1);
+    /* resume-analyzer 兼容变量 */
+    --bg: #fdf7f9; --card: #ffffff; --line: #f3e4e9; --ink: #2b1e24; --sub: #8a6d78;
+    --brand: #e75480; --brand-soft: #fdeef3; --good: #1a9e5c; --good-soft: #e7f6ee;
+    --warn: #e08600; --warn-soft: #fdf2e0; --bad: #d9372b; --bad-soft: #fdeceb;
+    --muted: #b69aa6; --radius: 12px;
+}
 
         body {
             font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -53,9 +158,9 @@
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(ellipse at 20% 20%, rgba(24, 29, 216, 0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(0, 217, 255, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(168, 85, 247, 0.02) 0%, transparent 70%);
+                radial-gradient(ellipse at 20% 20%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255, 143, 179, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(209, 107, 158, 0.03) 0%, transparent 70%);
             pointer-events: none;
             z-index: -1;
         }
@@ -96,7 +201,7 @@
             transform: translateX(-50%);
             width: 80%;
             height: 100%;
-            background: linear-gradient(180deg, rgba(24, 29, 216, 0.08) 0%, transparent 100%);
+            background: linear-gradient(180deg, rgba(231, 84, 128, 0.08) 0%, transparent 100%);
             border-radius: 0;
             z-index: -1;
         }
@@ -130,7 +235,7 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 3rem;
             font-weight: 700;
-            color: #181DD8;
+            color: #e75480;
             letter-spacing: 4px;
             margin-bottom: 15px;
         }
@@ -216,7 +321,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(24, 29, 216, 0.1) 0%, transparent 100%);
+            background: linear-gradient(135deg, rgba(231, 84, 128, 0.1) 0%, transparent 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -224,7 +329,7 @@
         .job-card:hover {
             border-color: var(--primary-light);
             transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(24, 29, 216, 0.3);
+            box-shadow: 0 10px 40px rgba(231, 84, 128, 0.3);
         }
 
         .job-card:hover::before {
@@ -233,8 +338,8 @@
 
         .job-card.selected {
             border-color: var(--primary);
-            background: linear-gradient(135deg, rgba(24, 29, 216, 0.3) 0%, rgba(0, 27, 150, 0.2) 100%);
-            box-shadow: 0 0 30px var(--glow-primary), inset 0 0 30px rgba(24, 29, 216, 0.1);
+            background: linear-gradient(135deg, rgba(231, 84, 128, 0.3) 0%, rgba(0, 27, 150, 0.2) 100%);
+            box-shadow: 0 0 30px var(--glow-primary), inset 0 0 30px rgba(231, 84, 128, 0.1);
         }
 
         .job-card.selected::after {
@@ -270,7 +375,7 @@
         }
 
         .job-salary {
-            color: #181DD8;
+            color: #e75480;
             font-family: 'Orbitron', sans-serif;
             font-size: 0.9rem;
         }
@@ -283,16 +388,16 @@
         }
 
         .job-tag {
-            background: rgba(24, 29, 216, 0.08);
+            background: rgba(231, 84, 128, 0.08);
             border: none;
             padding: 4px 12px;
             border-radius: 0;
             font-size: 0.75rem;
-            color: #181DD8;
+            color: #e75480;
         }
 
         .job-card.selected .job-tag {
-            background: rgba(0, 217, 255, 0.15);
+            background: rgba(255, 143, 179, 0.15);
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
         }
@@ -334,23 +439,23 @@
         .btn-outline {
             background: transparent;
             border: none;
-            color: #181DD8;
+            color: #e75480;
         }
 
         .btn-outline:hover {
-            background: rgba(24, 29, 216, 0.2);
+            background: rgba(231, 84, 128, 0.2);
             box-shadow: 0 0 20px var(--glow-primary);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #181DD8, #001B96);
+            background: linear-gradient(135deg, #e75480, #c23a68);
             color: white;
             border: none;
         }
 
         .btn-success:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(24, 29, 216, 0.4);
+            box-shadow: 0 8px 30px rgba(231, 84, 128, 0.4);
         }
 
         .btn-glow {
@@ -376,7 +481,7 @@
         }
 
         .smart-mode {
-            background: rgba(24, 29, 216, 0.05);
+            background: rgba(231, 84, 128, 0.06);
             border: none;
             border-radius: 0;
             padding: 20px;
@@ -385,7 +490,7 @@
 
         .smart-mode-title {
             font-weight: 600;
-            color: #181DD8;
+            color: #e75480;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
@@ -444,14 +549,14 @@
         }
 
         .toggle-switch input:checked + .toggle-slider {
-            background: #181DD8;
-            border-color: #181DD8;
+            background: #e75480;
+            border-color: #e75480;
         }
 
         .toggle-switch input:checked + .toggle-slider:before {
             transform: translateX(28px);
             background: white;
-            box-shadow: 0 0 10px rgba(24, 29, 216, 0.3);
+            box-shadow: 0 0 10px rgba(231, 84, 128, 0.3);
         }
 
         .upload-area {
@@ -461,7 +566,7 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.4s ease;
-            background: rgba(24, 29, 216, 0.05);
+            background: rgba(231, 84, 128, 0.06);
             position: relative;
             overflow: hidden;
         }
@@ -482,8 +587,8 @@
 
         .upload-area:hover, .upload-area.dragover {
             border-color: var(--accent-cyan);
-            background: rgba(0, 217, 255, 0.08);
-            box-shadow: 0 0 40px var(--glow-cyan), inset 0 0 60px rgba(0, 217, 255, 0.05);
+            background: rgba(255, 143, 179, 0.08);
+            box-shadow: 0 0 40px var(--glow-cyan), inset 0 0 60px rgba(255, 143, 179, 0.05);
         }
 
         .upload-area:hover::before, .upload-area.dragover::before {
@@ -543,7 +648,7 @@
 
         .file-item:hover {
             border-color: var(--primary-light);
-            box-shadow: 0 5px 20px rgba(24, 29, 216, 0.2);
+            box-shadow: 0 5px 20px rgba(231, 84, 128, 0.2);
         }
 
         .file-info {
@@ -684,34 +789,34 @@
             margin-top: 30px;
         }
 
-        .results-section .section-title { color: #1a1a2e; }
+        .results-section .section-title { color: #2b1e24; }
         .results-section .stat-card {
-            background: #f8f9fc;
+            background: #fdeef3;
             border: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .results-section .stat-card:hover {
-            box-shadow: 0 8px 25px rgba(24, 29, 216, 0.1);
+            box-shadow: 0 8px 25px rgba(231, 84, 128, 0.1);
             border-color: var(--primary-light);
         }
         .results-section .stat-value { color: var(--primary) !important; }
-        .results-section .stat-label { color: #64748b !important; }
+        .results-section .stat-label { color: #8a6d78 !important; }
         .results-section .stat-card .stat-icon {
             background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
         }
         .results-section .sort-select {
-            background: #f1f5f9;
-            color: #334155;
-            border-color: #e2e8f0;
+            background: #fdeef3;
+            color: #5b4250;
+            border-color: #f3e4e9;
         }
         .results-section .candidate-card {
             background: #ffffff;
             border: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            color: #1a1a2e;
+            color: #2b1e24;
         }
         .results-section .candidate-card:hover {
-            box-shadow: 0 10px 30px rgba(24, 29, 216, 0.12);
+            box-shadow: 0 10px 30px rgba(231, 84, 128, 0.12);
             border-color: var(--primary-light);
         }
 
@@ -751,7 +856,7 @@
 
         .stat-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 50px rgba(24, 29, 216, 0.3);
+            box-shadow: 0 15px 50px rgba(231, 84, 128, 0.3);
             border-color: var(--primary-light);
         }
 
@@ -839,7 +944,7 @@
         .candidate-card:hover {
             transform: translateX(5px);
             border-color: var(--primary-light);
-            box-shadow: 0 10px 40px rgba(24, 29, 216, 0.2);
+            box-shadow: 0 10px 40px rgba(231, 84, 128, 0.2);
         }
 
         .candidate-card.level-strong::before {
@@ -939,13 +1044,13 @@
         }
 
         .badge-strong {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(0, 217, 255, 0.2));
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(255, 143, 179, 0.2));
             border: none;
             color: var(--success);
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
         }
         .badge-recommend {
-            background: linear-gradient(135deg, rgba(24, 29, 216, 0.3), rgba(153, 172, 255, 0.2));
+            background: linear-gradient(135deg, rgba(231, 84, 128, 0.3), rgba(244, 167, 192, 0.2));
             border: none;
             color: var(--primary-light);
             box-shadow: 0 0 20px var(--glow-primary);
@@ -975,7 +1080,7 @@
         }
 
         .candidate-summary {
-            background: rgba(248, 249, 252, 0.8);
+            background: rgba(253, 238, 243, 0.85);
             border: none;
             border-radius: 0;
             padding: 18px;
@@ -1029,7 +1134,7 @@
         }
 
         .detail-section {
-            background: rgba(248, 249, 252, 0.8);
+            background: rgba(253, 238, 243, 0.85);
             border: none;
             border-radius: 0;
             padding: 22px;
@@ -1141,7 +1246,7 @@
         }
 
         .matched-job {
-            background: rgba(24, 29, 216, 0.15);
+            background: rgba(231, 84, 128, 0.15);
             border: none;
             padding: 6px 14px;
             border-radius: 0;
@@ -1161,7 +1266,7 @@
         }
 
         .evaluation-section {
-            background: rgba(248, 249, 252, 0.8);
+            background: rgba(253, 238, 243, 0.85);
             border: none;
             border-radius: 0;
             padding: 22px;
@@ -1193,7 +1298,7 @@
         }
 
         .interview-tips {
-            background: linear-gradient(135deg, rgba(24, 29, 216, 0.15) 0%, rgba(0, 217, 255, 0.05) 100%);
+            background: linear-gradient(135deg, rgba(231, 84, 128, 0.15) 0%, rgba(255, 143, 179, 0.05) 100%);
             border: none;
             border-radius: 0;
             padding: 18px;
@@ -1309,19 +1414,19 @@
             width: 40px;
             height: 40px;
             border: none;
-            background: #f1f5f9;
+            background: #fdeef3;
             border-radius: 0;
             font-size: 1.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            color: #64748b;
+            color: #8a6d78;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .modal-close:hover {
-            background: #e2e8f0;
+            background: #f3e4e9;
             transform: rotate(90deg);
         }
 
@@ -1344,8 +1449,8 @@
             padding: 8px 16px;
             border: none;
             border-radius: 0;
-            background: #f1f5f9;
-            color: #64748b;
+            background: #fdeef3;
+            color: #8a6d78;
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 500;
@@ -1354,8 +1459,8 @@
         }
 
         .jd-tab:hover {
-            background: #e2e8f0;
-            color: #1a1a2e;
+            background: #f3e4e9;
+            color: #2b1e24;
         }
 
         .jd-tab.active {
@@ -1390,8 +1495,8 @@
             border-radius: 0;
             font-size: 0.95rem;
             transition: all 0.3s ease;
-            background: #f8f9fc;
-            color: #1a1a2e;
+            background: #fdeef3;
+            color: #2b1e24;
             font-family: 'Noto Sans SC', sans-serif;
         }
 
@@ -1437,7 +1542,7 @@
             padding: 16px 32px;
             border-radius: 0;
             font-weight: 500;
-            box-shadow: 0 10px 40px rgba(24, 29, 216, 0.4);
+            box-shadow: 0 10px 40px rgba(231, 84, 128, 0.4);
             z-index: 3000;
             animation: fadeIn 0.3s ease;
             font-family: 'Noto Sans SC', sans-serif;
@@ -1465,9 +1570,102 @@
         ::-webkit-scrollbar-track { background: var(--bg-main); }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 0; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
-    </style>
+    
+/* ========== 简历速析 · Resume Analyzer（粉色系，容器隔离） ========== */
+
+  
+  
+  
+  #tool-analyzer header{background:#fff;border-bottom:1px solid var(--line);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  #tool-analyzer header h1{font-size:18px;margin:0}
+  .tag{font-size:11px;color:var(--brand);background:var(--brand-soft);padding:2px 8px;border-radius:20px;font-weight:600}
+  .sub{color:var(--sub);font-size:12px}
+  #tool-analyzer details.how{font-size:12px;color:var(--sub)}
+  #tool-analyzer details.how summary{cursor:pointer;color:var(--brand);font-weight:600}
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 28px 60px}
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .panel h2{font-size:14px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between}
+  #tool-analyzer textarea{width:100%;min-height:440px;border:1px solid var(--line);border-radius:8px;padding:12px;font-family:ui-monospace,"Consolas","Microsoft YaHei",monospace;font-size:12.5px;resize:vertical;color:var(--ink);background:#fbfcfd}
+  #tool-analyzer textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .dropzone{border:1.5px dashed var(--line);border-radius:8px;padding:10px;text-align:center;color:var(--sub);font-size:12px;margin-top:10px;cursor:pointer;transition:.15s}
+  .dropzone.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  label.inline{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
+  #tool-analyzer input[type=checkbox]{accent-color:var(--brand)}
+  .sep{font-size:12px;color:var(--sub)}
+  input.sepinput{width:70px;border:1px solid var(--line);border-radius:6px;padding:3px 6px;font-size:12px}
+  #tool-analyzer button{font-family:inherit;font-size:13px;font-weight:600;border:none;border-radius:8px;cursor:pointer;padding:9px 16px;transition:.15s}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-primary:hover{background:#d13a6e}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  /* results */
+  .summary-table{width:100%;border-collapse:collapse;font-size:12px}
+  .summary-table th,.summary-table td{border:1px solid var(--line);padding:7px 8px;text-align:left;white-space:nowrap}
+  .summary-table th{background:#fafbfc;font-weight:600;color:var(--sub)}
+  .card{border:1px solid var(--line);border-radius:var(--radius);margin-top:16px;overflow:hidden}
+  .card-head{padding:12px 16px;background:#fafbfc;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .card-head .name{font-size:15px;font-weight:700}
+  .dir-chip{font-size:12px;background:var(--brand-soft);color:var(--brand);padding:3px 10px;border-radius:20px;font-weight:600}
+  .score-chip{font-size:12px;color:var(--sub)}
+  .card-body{padding:14px 16px}
+  .radar-wrap{position:relative;width:100%;max-width:680px;margin:0 auto;height:560px}
+  .radar-svg{width:100%;height:100%;display:block}
+  .grid-poly{fill:none;stroke:var(--line);stroke-width:1}
+  .axis{stroke:var(--line);stroke-width:1}
+  .data-poly{fill:rgba(231,84,128,.14);stroke:var(--brand);stroke-width:2;stroke-linejoin:round}
+  .dot{fill:var(--brand);stroke:#fff;stroke-width:1.5}
+  .axis-label{font-size:12px;fill:var(--ink);font-weight:600}
+  .center-name{font-size:14px;font-weight:700;fill:var(--ink)}
+  .center-sub{font-size:10px;fill:var(--sub)}
+  .dimcard{position:absolute;transform:translate(-50%,-50%);width:152px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.08);cursor:pointer;z-index:2;transition:.15s}
+  .dimcard:hover{border-color:var(--brand)}
+  .dimcard.expanded{z-index:12;box-shadow:0 10px 28px rgba(0,0,0,.16);width:180px}
+  .dimcard-h{display:flex;justify-content:space-between;align-items:center;gap:6px}
+  .dimcard-label{font-weight:700;font-size:12px}
+  .dimcard-sum{font-size:11px;color:var(--sub);margin-top:3px}
+  .dimcard-detail{font-size:11px;color:var(--ink);margin-top:6px;max-height:160px;overflow:auto;border-top:1px dashed var(--line);padding-top:5px;white-space:normal}
+  .dimcard-detail.collapsed{display:none}
+  .dimcard-toggle{font-size:11px;color:var(--brand);text-align:right;margin-top:4px;user-select:none}
+  .risk-section{margin-top:14px}
+  .risk-section .rt{font-size:12px;color:var(--sub);font-weight:600;margin-bottom:6px}
+  .risk-list{list-style:none;margin:0;padding:0;font-size:12.5px}
+  .risk-list li{padding:4px 0 4px 18px;position:relative;color:var(--ink)}
+  .risk-list li::before{content:"";position:absolute;left:2px;top:10px;width:7px;height:7px;border-radius:50%}
+  .risk-list li.r::before{background:var(--bad)}
+  .risk-list li.warn::before{background:var(--warn)}
+  .risk-list li.tip::before{background:var(--brand)}
+  .risk-list li.ok::before{background:var(--good)}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;line-height:1.6}
+  .b-a{background:var(--good-soft);color:var(--good)}
+  .b-b{background:var(--brand-soft);color:var(--brand)}
+  .b-c{background:var(--warn-soft);color:var(--warn)}
+  .b-d{background:var(--bad-soft);color:var(--bad)}
+  .pill-pass{background:var(--good-soft);color:var(--good)}
+  .pill-fail{background:var(--bad-soft);color:var(--bad)}
+  .hint{font-size:11px;color:var(--muted);margin-top:8px}
+  .empty{color:var(--muted);text-align:center;padding:40px 0;font-size:13px}
+  #tool-analyzer footer{margin-top:20px;font-size:11px;color:var(--muted);text-align:center}
+  .loading{color:var(--brand);font-weight:600;font-size:13px;padding:20px 0;text-align:center}
+
+</style>
 </head>
 <body>
+<header class="app-header">
+  <div>
+    <div class="app-title">简历筛选与速析工作台</div>
+    <div class="app-sub">BJAK 智能简历筛选系统 · 简历速析 Resume Analyzer · 粉色主题合并版</div>
+  </div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tool="bjak">BJAK 智能简历筛选</button>
+    <button class="tab-btn" data-tool="analyzer">简历速析</button>
+  </nav>
+</header>
+<div id="tool-bjak" class="tool-panel active">
+
     <div class="container">
         <header class="header">
             <div class="header-decoration">
@@ -1479,9 +1677,9 @@
                         <circle cx="30" cy="30" r="8" fill="url(#grad1)"></circle>
                         <defs>
                             <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#181DD8"></stop>
-                                <stop offset="50%" style="stop-color:#99ACFF"></stop>
-                                <stop offset="100%" style="stop-color:#00D9FF"></stop>
+                                <stop offset="0%" style="stop-color:#e75480"></stop>
+                                <stop offset="50%" style="stop-color:#f4a7c0"></stop>
+                                <stop offset="100%" style="stop-color:#ff8fb3"></stop>
                             </linearGradient>
                         </defs>
                     </svg>
@@ -1634,7 +1832,75 @@
         </div>
     </div>
 
-    <script>
+    
+
+</div>
+<div id="tool-analyzer" class="tool-panel">
+
+<header>
+  <div>
+    <h1>简历速析 <span class="tag">离线 · 支持 PDF · 雷达图</span></h1>
+    <div class="sub">粘贴或拖入简历（PDF / txt / md）→ 七维雷达图 + 维度卡片，逐维展开看细节</div>
+  </div>
+  <details class="how">
+    <summary>怎么用</summary>
+    <div style="width:360px;margin-top:6px">
+      1. 直接拖 PDF / txt / md 进来，PDF 会自动提取文字（首次需联网加载解析引擎）。<br>
+      2. 多份简历用分隔符（默认 <code>=====</code>）隔开，点「分析」。<br>
+      3. 每份简历一张雷达图，维度点旁的卡片点一下可展开完整文字。<br>
+      4. 可导出 CSV / 复制 Markdown。机器初判，顶会一作、全日制建议人工复核。
+    </div>
+  </details>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <h2>输入简历 <span class="sub" id="countLabel">0 字</span></h2>
+        <textarea id="src" placeholder="粘贴简历文本…（可多份，用 ===== 分隔）"></textarea>
+        <div class="dropzone" id="dz">拖拽 PDF / txt / md 文件到这里，或点击选择</div>
+        <input type="file" id="file" accept=".pdf,.md,.txt,.markdown,text/plain,application/pdf" multiple style="display:none">
+        <div class="hint">隐私说明：解析全程在本机浏览器内完成，不联网、不上传、不抓取、不存储联系方式。姓名仅用于本地判断「是否一作」。</div>
+        <div class="row">
+          <label class="inline">硬过滤：
+            <input type="checkbox" id="f-bachelor">本科及以上</label>
+          <label class="inline"><input type="checkbox" id="f-fulltime">全日制</label>
+          <label class="inline"><input type="checkbox" id="f-elite">985/211/海外Top100</label>
+          <label class="inline"><input type="checkbox" id="f-tenure">平均任期≥24月</label>
+          <label class="inline"><input type="checkbox" id="f-gap">无≥6月空窗</label>
+        </div>
+        <div class="row">
+          <span class="sep">分隔符</span>
+          <input class="sepinput" id="sep" value="=====">
+          <label class="inline" style="margin-left:8px"><input type="checkbox" id="f-maskname">脱敏时同时打码姓名</label>
+        </div>
+        <div class="btns">
+          <button class="btn-primary" id="btnRun">分析</button>
+          <button class="btn-ghost" id="btnMask">脱敏</button>
+          <button class="btn-ghost" id="btnSample">示例简历</button>
+          <button class="btn-ghost" id="btnClear">清空</button>
+          <button class="btn-ghost" id="btnCsv">导出 CSV</button>
+          <button class="btn-ghost" id="btnMd">复制 Markdown</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="resultPanel">
+      <h2>分析结果 <span class="sub" id="resultMeta"></span></h2>
+      <div id="results"><div class="empty">左侧粘贴或拖入简历后点「分析」，或点「示例简历」看效果。</div></div>
+    </div>
+  </div>
+  <footer>简历速析 v2.0 · 所有计算在本地完成，不上传任何数据</footer>
+</div>
+
+
+
+</div>
+<script>
+if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+}
+
         var DEFAULT_JOBS = [
             { id: 1, title: 'AI 全栈工程师', salary: '40-80k', experience: '1-3年', 
               keywords: { high: ['Python', 'PyTorch', 'TensorFlow', 'LangChain', 'Node.js', 'React', 'Vue', 'FastAPI', 'Django', 'PostgreSQL', 'MongoDB', 'Redis', 'Docker', 'Kubernetes'], 
@@ -2371,7 +2637,7 @@
             }).join('');
 
             var circles = points.map(function(p) {
-                return '<circle cx="' + p.x + '" cy="' + p.y + '" r="5" fill="#00D9FF" stroke="white" stroke-width="2"/>';
+                return '<circle cx="' + p.x + '" cy="' + p.y + '" r="5" fill="#ff8fb3" stroke="white" stroke-width="2"/>';
             }).join('');
 
             var labelSpans = labels.map(function(label, i) {
@@ -2383,7 +2649,7 @@
                 if (i === 1) labelY -= 5;
                 if (i === 5) labelY += 8;
                 if (i === 6) labelY += 5;
-                return '<span class="radar-label" style="left: ' + labelX + 'px; top: ' + labelY + 'px;">' + label + '<br><small style="color: #00D9FF;">' + values[i].toFixed(1) + '</small></span>';
+                return '<span class="radar-label" style="left: ' + labelX + 'px; top: ' + labelY + 'px;">' + label + '<br><small style="color: #ff8fb3;">' + values[i].toFixed(1) + '</small></span>';
             }).join('');
 
             return '<div class="radar-grid">' +
@@ -2394,7 +2660,7 @@
             '</div>' +
             '<svg width="280" height="280" style="position: absolute; top: 0; left: 0;">' +
                 lines +
-                '<polygon points="' + polygonPoints + '" fill="rgba(24,29,216,0.3)" stroke="#99ACFF" stroke-width="2"/>' +
+                '<polygon points="' + polygonPoints + '" fill="rgba(24,29,216,0.3)" stroke="#f4a7c0" stroke-width="2"/>' +
                 circles +
             '</svg>' +
             '<div class="radar-labels">' + labelSpans + '</div>';
@@ -2474,6 +2740,902 @@
             setupUploadArea();
             updateStartButton();
         });
-    </script>
+    
+
+"use strict";
+/* ============ 数据字典 ============ */
+const SCHOOLS = [
+["清华大学","C9",["清华","Tsinghua","THU"]],["北京大学","C9",["北大","Peking","PKU"]],
+["复旦大学","C9",["复旦","Fudan"]],["上海交通大学","C9",["上交","上海交大","SJTU","交大"]],
+["浙江大学","C9",["浙大","Zhejiang"]],["南京大学","C9",["南大","Nanjing"]],
+["中国科学技术大学","C9",["中科大","中国科大","USTC"]],["哈尔滨工业大学","C9",["哈工大","HIT"]],
+["西安交通大学","C9",["西交","西安交大","XJTU"]],
+["中国人民大学","985",["人大","RUC"]],["北京航空航天大学","985",["北航","BUAA"]],
+["北京理工大学","985",["北理工","北理","BIT"]],["南开大学","985",["南开","Nankai"]],
+["天津大学","985",["天大","Tianjin"]],["大连理工大学","985",["大连理工","大工","DUT"]],
+["东北大学","985",["东大","NEU"]],["吉林大学","985",["吉大","JLU"]],
+["同济大学","985",["同济","Tongji"]],["华东师范大学","985",["华东师大","ECNU"]],
+["东南大学","985",["东南","SEU"]],["厦门大学","985",["厦大","XMU"]],
+["山东大学","985",["山大","SDU"]],["中国海洋大学","985",["海大","OUC"]],
+["武汉大学","985",["武大","WHU"]],["华中科技大学","985",["华科","华中科技","HUST"]],
+["中南大学","985",["中南","CSU"]],["湖南大学","985",["湖大","HNU"]],
+["中山大学","985",["中山","中大","SYSU"]],["华南理工大学","985",["华南理工","华工","SCUT"]],
+["四川大学","985",["川大","SCU"]],["重庆大学","985",["重大","CQU"]],
+["电子科技大学","985",["电子科大","成电","UESTC"]],["西北工业大学","985",["西工大","NPU"]],
+["西北农林科技大学","985",["西北农林"]],["兰州大学","985",["兰大","LZU"]],
+["中国农业大学","985",["中国农大","农大"]],["国防科技大学","985",["国防科大","NUDT"]],
+["中央民族大学","985",["中央民族"]],
+["上海财经大学","211",["上财"]],["中央财经大学","211",["央财","中财"]],["对外经济贸易大学","211",["对外经贸","贸大"]],
+["北京邮电大学","211",["北邮","BUPT"]],["北京交通大学","211",["北交","北交大"]],["北京科技大学","211",["北科","北科大"]],
+["北京林业大学","211",["北林"]],["中国政法大学","211",["法大"]],["华北电力大学","211",["华电"]],
+["中国矿业大学","211",["矿大"]],["中国石油大学","211",["石油大学"]],["中国地质大学","211",["地大"]],
+["河海大学","211",["河海"]],["江南大学","211",["江南"]],["南京航空航天大学","211",["南航","NUAA"]],
+["南京理工大学","211",["南理工","南理","NJUST"]],["苏州大学","211",["苏大"]],["南京师范大学","211",["南师","南师大"]],
+["南京农业大学","211",["南农"]],["中国药科大学","211",["药科大"]],["合肥工业大学","211",["合工大","HFUT"]],
+["福州大学","211",["福大"]],["南昌大学","211",["昌大"]],["太原理工大学","211",["太原理工"]],
+["郑州大学","211",["郑大"]],["武汉理工大学","211",["武理工"]],["华中师范大学","211",["华中师大"]],
+["华中农业大学","211",["华中农大"]],["中南财经政法大学","211",["中南财经"]],["湖南师范大学","211",["湖南师大"]],
+["暨南大学","211",["暨大"]],["华南师范大学","211",["华南师大"]],["广西大学","211",["西大"]],
+["西南大学","211",["西南大学"]],["西南交通大学","211",["西南交大"]],["西安电子科技大学","211",["西电","XDU"]],
+["西北大学","211",["西北大学"]],["陕西师范大学","211",["陕西师大"]],["长安大学","211",["长安大学"]],
+["云南大学","211",["云大"]],["贵州大学","211",["贵大"]],["海南大学","211",["海大"]],
+["上海大学","211",["上大"]],["东华大学","211",["东华"]],["上海外国语大学","211",["上外"]],
+["北京外国语大学","211",["北外"]],["中国传媒大学","211",["中传"]],["天津医科大学","211",["天津医科"]],
+["辽宁大学","211",["辽大"]],["大连海事大学","211",["大连海事"]],["东北师范大学","211",["东北师大"]],
+["东北农业大学","211",["东北农大"]],["东北林业大学","211",["东北林大"]],["哈尔滨工程大学","211",["哈工程","哈军工"]],
+["安徽大学","211",["安大"]],["新疆大学","211",["新大"]],["石河子大学","211",["石河子"]],
+["宁夏大学","211",["宁大"]],["青海大学","211",["青大"]],["西藏大学","211",["藏大"]],
+["延边大学","211",["延边"]],["内蒙古大学","211",["内大"]],["第二军医大学","211",["二军大"]],
+["第四军医大学","211",["四军大"]],
+["麻省理工学院","海外Top100",["MIT","Massachusetts Institute of Technology"]],
+["斯坦福大学","海外Top100",["Stanford","斯坦福"]],["哈佛大学","海外Top100",["Harvard","哈佛"]],
+["加州大学伯克利分校","海外Top100",["Berkeley","UC Berkeley","伯克利"]],["卡内基梅隆大学","海外Top100",["CMU","Carnegie Mellon","卡内基"]],
+["加州理工学院","海外Top100",["Caltech"]],["普林斯顿大学","海外Top100",["Princeton"]],
+["耶鲁大学","海外Top100",["Yale"]],["哥伦比亚大学","海外Top100",["Columbia","哥大"]],
+["康奈尔大学","海外Top100",["Cornell"]],["芝加哥大学","海外Top100",["UChicago","University of Chicago"]],
+["宾夕法尼亚大学","海外Top100",["UPenn","Penn"]],["约翰霍普金斯大学","海外Top100",["Johns Hopkins","JHU"]],
+["西北大学","海外Top100",["Northwestern"]],["杜克大学","海外Top100",["Duke"]],
+["密歇根大学","海外Top100",["Michigan","University of Michigan"]],["伊利诺伊大学厄巴纳-香槟分校","海外Top100",["UIUC","Illinois"]],
+["佐治亚理工学院","海外Top100",["Georgia Tech","Gatech"]],["加州大学洛杉矶分校","海外Top100",["UCLA"]],
+["加州大学圣地亚哥分校","海外Top100",["UCSD"]],["加州大学圣塔芭芭拉分校","海外Top100",["UCSB"]],
+["加州大学尔湾分校","海外Top100",["UCI"]],["加州大学戴维斯分校","海外Top100",["UC Davis"]],
+["华盛顿大学","海外Top100",["University of Washington","UW"]],["德克萨斯大学奥斯汀分校","海外Top100",["UT Austin","Texas"]],
+["普渡大学","海外Top100",["Purdue"]],["威斯康星大学麦迪逊分校","海外Top100",["Wisconsin","UW-Madison"]],
+["南加州大学","海外Top100",["USC","南加大"]],["纽约大学","海外Top100",["NYU"]],
+["波士顿大学","海外Top100",["Boston University","BU"]],["莱斯大学","海外Top100",["Rice"]],
+["范德堡大学","海外Top100",["Vanderbilt"]],["圣母大学","海外Top100",["Notre Dame"]],
+["埃默里大学","海外Top100",["Emory"]],["多伦多大学","海外Top100",["Toronto","University of Toronto"]],
+["麦吉尔大学","海外Top100",["McGill"]],["英属哥伦比亚大学","海外Top100",["UBC"]],
+["滑铁卢大学","海外Top100",["Waterloo"]],["苏黎世联邦理工学院","海外Top100",["ETH","ETH Zurich","苏黎世联邦"]],
+["洛桑联邦理工学院","海外Top100",["EPFL"]],["牛津大学","海外Top100",["Oxford"]],
+["剑桥大学","海外Top100",["Cambridge"]],["帝国理工学院","海外Top100",["Imperial","ICL"]],
+["伦敦大学学院","海外Top100",["UCL"]],["伦敦政治经济学院","海外Top100",["LSE"]],
+["爱丁堡大学","海外Top100",["Edinburgh"]],["曼彻斯特大学","海外Top100",["Manchester"]],
+["伦敦国王学院","海外Top100",["KCL","King's College"]],["布里斯托大学","海外Top100",["Bristol"]],
+["华威大学","海外Top100",["Warwick"]],["格拉斯哥大学","海外Top100",["Glasgow"]],
+["伯明翰大学","海外Top100",["Birmingham"]],["谢菲尔德大学","海外Top100",["Sheffield"]],
+["利兹大学","海外Top100",["Leeds"]],["利物浦大学","海外Top100",["Liverpool"]],
+["诺丁汉大学","海外Top100",["Nottingham"]],["南安普顿大学","海外Top100",["Southampton"]],
+["杜伦大学","海外Top100",["Durham"]],["慕尼黑工业大学","海外Top100",["TUM","慕尼黑工大"]],
+["慕尼黑大学","海外Top100",["LMU"]],["海德堡大学","海外Top100",["Heidelberg"]],
+["卡尔斯鲁厄理工学院","海外Top100",["KIT"]],["亚琛工业大学","海外Top100",["RWTH","亚琛"]],
+["代尔夫特理工大学","海外Top100",["TU Delft","Delft","代尔夫特"]],["鲁汶大学","海外Top100",["KU Leuven","鲁汶"]],
+["索邦大学","海外Top100",["Sorbonne"]],["巴黎综合理工学院","海外Top100",["Ecole Polytechnique","Polytechnique"]],
+["巴黎高等师范学院","海外Top100",["ENS Paris"]],["哥本哈根大学","海外Top100",["Copenhagen"]],
+["瑞典皇家理工学院","海外Top100",["KTH"]],["查尔姆斯理工大学","海外Top100",["Chalmers"]],
+["阿尔托大学","海外Top100",["Aalto"]],["乌普萨拉大学","海外Top100",["Uppsala"]],
+["隆德大学","海外Top100",["Lund"]],["奥斯陆大学","海外Top100",["Oslo"]],
+["新加坡国立大学","海外Top100",["NUS","新加坡国立"]],["南洋理工大学","海外Top100",["NTU","南洋理工"]],
+["新加坡管理大学","海外Top100",["SMU"]],["东京大学","海外Top100",["Tokyo","University of Tokyo","东大"]],
+["京都大学","海外Top100",["Kyoto"]],["大阪大学","海外Top100",["Osaka"]],
+["东北大学(日本)","海外Top100",["Tohoku"]],["东京工业大学","海外Top100",["Tokyo Tech","东工大"]],
+["名古屋大学","海外Top100",["Nagoya"]],["早稻田大学","海外Top100",["Waseda"]],
+["庆应义塾大学","海外Top100",["Keio"]],["首尔国立大学","海外Top100",["Seoul National","SNU"]],
+["韩国科学技术院","海外Top100",["KAIST"]],["浦项工科大学","海外Top100",["POSTECH"]],
+["延世大学","海外Top100",["Yonsei"]],["高丽大学","海外Top100",["Korea University"]],
+["香港大学","海外Top100",["HKU","香港大学"]],["香港科技大学","海外Top100",["HKUST","香港科技"]],
+["香港中文大学","海外Top100",["CUHK","香港中文"]],["香港理工大学","海外Top100",["PolyU","香港理工"]],
+["香港城市大学","海外Top100",["CityU","香港城市"]],
+["墨尔本大学","海外Top100",["Melbourne"]],["悉尼大学","海外Top100",["Sydney"]],
+["新南威尔士大学","海外Top100",["UNSW"]],["澳大利亚国立大学","海外Top100",["ANU","澳洲国立"]],
+["莫纳什大学","海外Top100",["Monash"]],["昆士兰大学","海外Top100",["Queensland"]],
+["奥克兰大学","海外Top100",["Auckland"]]
+];
+const TIER_RANK = {"C9":7,"985":6,"211":5,"海外Top100":6.5,"双一流":4,"海外其他":3.5,"普通本科":3,"专科":2,"未知":1};
+const TIER_LABEL = {"C9":"C9","985":"985","211":"211","海外Top100":"海外Top100","双一流":"双一流","海外其他":"海外其他","普通本科":"普通本科","专科":"专科","未知":"未知"};
+
+const VENUE_TOP = ["NeurIPS","NIPS","ICML","ICLR","CVPR","ICCV","ECCV","ACL","EMNLP","NAACL","SIGGRAPH","RSS","CoRL","AAAI","IJCAI","ICRA","IROS","KDD","SIGIR","MICCAI","Humanoids","TPAMI","IJCV","JMLR","T-RO","TRO","RA-L","RAL","IJRR","Science Robotics","Nature Machine Intelligence"];
+const VENUE_ALIAS = {"NIPS":"NeurIPS","TRO":"T-RO","RAL":"RA-L"};
+
+const DIRS = [
+["灵巧手",["灵巧手","多指手","dexterous hand","五指手","仿人手"]],
+["末端执行器",["末端执行器","end-effector","末端工具","夹爪","gripper","电动夹爪","快换"]],
+["关节模组/传动",["关节模组","一体化关节","谐波减速","行星滚柱","滚柱丝杠","丝杠","电机驱动","执行器","actuator","减速器","磁编码"]],
+["机械结构设计",["结构设计","机械设计","传动系统","拓扑优化","有限元","公差分析","DFM","装配","SolidWorks","CATIA","Pro/E","Creo"]],
+["运动控制",["运动控制","motion control","力矩控制","阻抗控制","力控","force control","WBC","全身控制","whole-body","导纳控制"]],
+["强化学习/模仿",["强化学习","reinforcement learning","RL","PPO","SAC","sim2real","模仿学习","imitation learning","IL","diffusion policy"]],
+["机器人操作",["机器人操作","manipulation","抓取","grasping","pick-and-place","装配","assembly","插入","peg-in-hole"]],
+["具身智能/VLA",["具身智能","embodied","VLA","vision-language-action","大模型","LLM","多模态","multimodal","foundation model","世界模型","world model"]],
+["视觉感知/SLAM",["SLAM","三维重建","点云","point cloud","6D姿态","pose estimation","位姿估计","视觉伺服","servoing","目标检测","检测","分割","深度估计"]],
+["触觉/力传感",["触觉","tactile","柔性传感","力传感","force sensor","电子皮肤","skin","指尖传感"]],
+["导航/规划",["导航","navigation","路径规划","path planning","避障","exploration","运动规划","motion planning","轨迹规划"]],
+["人形/足式本体",["人形机器人","humanoid","双足","bipedal","四足","quadruped","外骨骼","exoskeleton","步态"]],
+["仿真/数据闭环",["仿真","simulation","Isaac","MuJoCo","Gazebo","数据采集","teleoperation","遥操作","数据闭环","合成数据"]],
+["供应链/采购",["采购","寻源","sourcing","品类","category","成本降低","降本","VAVE","供应商管理","supplier","SQE","来料","IQC","质量管理","NPI","量产","供应商"]],
+["嵌入式/硬件",["嵌入式","embedded","STM32","FPGA","PCB","固件","firmware","CAN","EtherCAT","驱动开发"]],
+["打磨/磨抛",["打磨","磨抛","polishing","grinding","去毛刺","deburring","力控打磨","砂带","磨削"]]
+];
+
+/* ============ 工具函数 ============ */
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function nowMonths(){const d=new Date();return d.getFullYear()*12+(d.getMonth()+1);}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+function parseDateTok(s){
+  s=s.trim();if(!s)return null;
+  if(/^(至今|今|现在|目前|present|current|now)$/i.test(s))return {now:true};
+  let m;
+  if(m=s.match(/^(20\d{2}|19\d{2})\s*[.\-\/年]\s*(\d{1,2})\s*月?$/))return {y:+m[1],m:+m[2]};
+  if(m=s.match(/^(20\d{2}|19\d{2})\s*年\s*(\d{1,2})\s*月?$/))return {y:+m[1],m:+m[2]};
+  if(m=s.match(/^(20\d{2}|19\d{2})$/))return {y:+m[1]};
+  const EM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  if(m=s.match(/^([A-Za-z]{3,9})\.?\s*,?\s*(20\d{2}|19\d{2})$/)){const mm=EM[m[1].slice(0,3).toLowerCase()];if(mm)return {y:+m[2],m:mm};}
+  if(m=s.match(/^(20\d{2}|19\d{2})\s+([A-Za-z]{3,9})$/)){const mm=EM[m[2].slice(0,3).toLowerCase()];if(mm)return {y:+m[1],m:mm};}
+  return null;
+}
+function extractRange(line){
+  const EM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  let m;
+  m=line.match(/(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?/i);
+  if(m){
+    const sm=m[2]?+((m[2].match(/\d{1,2}/)||[])[0]||0):0;
+    const em=m[4]?+((m[4].match(/\d{1,2}/)||[])[0]||0):0;
+    return {start:sm?{y:+m[1],m:sm}:{y:+m[1]},end:em?{y:+m[3],m:em}:{y:+m[3]},idx:m.index,len:m[0].length};
+  }
+  m=line.match(/(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(至今|今|现在|目前|present|current|now)/i);
+  if(m){
+    const sm=m[2]?+((m[2].match(/\d{1,2}/)||[])[0]||0):0;
+    return {start:sm?{y:+m[1],m:sm}:{y:+m[1]},end:{now:true},idx:m.index,len:m[0].length};
+  }
+  // "2021.09-" 开始日期 + 连字符，结束为空（在读/至今）
+  m=line.match(/(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(?=[\s,，;；、)）]|$)/i);
+  if(m){
+    const sm=m[2]?+((m[2].match(/\d{1,2}/)||[])[0]||0):0;
+    return {start:sm?{y:+m[1],m:sm}:{y:+m[1]},end:{now:true},idx:m.index,len:m[0].length};
+  }
+  m=line.match(/([A-Za-z]{3,9})\.?\s*,?\s*(20\d{2}|19\d{2})\s*(?:[-–—~～]{1,3}|至|到|to)\s*([A-Za-z]{3,9})\.?\s*,?\s*(20\d{2}|19\d{2})/i);
+  if(m){
+    const sm=EM[m[1].slice(0,3).toLowerCase()],em=EM[m[3].slice(0,3).toLowerCase()];
+    if(sm&&em)return {start:{y:+m[2],m:sm},end:{y:+m[4],m:em},idx:m.index,len:m[0].length};
+  }
+  return null;
+}
+function toM(d){if(!d)return null;if(d.now)return nowMonths();return d.y*12+(d.m||6);}
+
+/* ============ 姓名 / 学历 / 学校 ============ */
+function extractName(text){
+  let m=text.match(/姓名\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/);
+  if(m)return m[1];
+  m=text.match(/(?:Name|名字)\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/i);
+  if(m)return m[1];
+  const lines=text.split(/\r?\n/);
+  const stop=/^(简历|个人简历|求职|姓名|电话|手机|邮箱|籍贯|出生|年龄|性别|地址|专业|学历|求职意向|目标|意向|工作经历|教育经历|项目经历|自我评价|专业技能|实习经历|科研|论文)/;
+  for(let i=0;i<Math.min(10,lines.length);i++){
+    let l=lines[i].trim();
+    if(!l)continue;
+    // 去掉 bullet / 序号前缀
+    let clean=l.replace(/^[\s]*[•·▪●▸►\-*—>＞]+\s*/,"").replace(/^\d+[.、)）]\s*/,"").trim();
+    // 整行纯中文 2-4 字
+    if(/^[\u4e00-\u9fa5]{2,4}$/.test(clean)&&!stop.test(clean))return clean;
+    // 混排：行首 2-4 个中文后跟分隔符（姓名 + 联系方式同行）
+    const mm=clean.match(/^([\u4e00-\u9fa5]{2,4})(?=[\s|｜,，:：]|$)/);
+    if(mm&&!stop.test(mm[1]))return mm[1];
+  }
+  m=text.match(/([a-z]{3,15})@/i);
+  if(m)return m[1];
+  return "";
+}
+function detectDegree(text){
+  const degs=[];
+  if(/博士|PhD|Ph\.D|Doctor\s*of/i.test(text))degs.push({d:"博士",lv:4});
+  if(/硕士|研究生|Master|M\.S\.|MSc|MS\b/i.test(text))degs.push({d:"硕士",lv:3});
+  if(/本科|学士|Bachelor|B\.S\.|BSc|B\.E\.|BS\b/i.test(text))degs.push({d:"本科",lv:2});
+  if(/专科|大专|高职|高级技工/i.test(text))degs.push({d:"专科",lv:1});
+  if(!degs.length)return {degree:"未知",level:0};
+  degs.sort((a,b)=>b.lv-a.lv);
+  let fulltime="未知";
+  if(/在职|函授|自考|成人|网络教育|非全日制|业余|电大|夜大/i.test(text))fulltime="否";
+  else if(/全日制|统招|普通高等学校/i.test(text))fulltime="是";
+  return {degree:degs[0].d,level:degs[0].lv,fulltime};
+}
+function detectSchool(text){
+  const lower=text.toLowerCase(),found=[];
+  SCHOOLS.forEach(s=>{
+    const names=[s[0]].concat(s[2]||[]);
+    names.forEach(n=>{
+      const nl=n.toLowerCase();
+      let hit=false;
+      if(/^[a-z]{1,3}$/.test(nl)){ // 短英文缩写用词边界，避免"USC"匹配到"muscle"、"BU"匹配到"buaa"
+        hit=new RegExp("\\b"+nl.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i").test(text);
+      }else{
+        hit=lower.includes(nl);
+      }
+      if(hit)found.push({name:s[0],tier:s[1]});
+    });
+  });
+  const hasOversea=/University\b|College\b|Institute\s+of\s+Technology|ETH|EPFL/i.test(text);
+  let tier="未知",school="";
+  if(found.length){
+    found.sort((a,b)=>TIER_RANK[b.tier]-TIER_RANK[a.tier]);
+    tier=found[0].tier;school=found[0].name;
+  }else if(/大学|学院/.test(text)){tier="普通本科";}
+  else if(hasOversea){tier="海外其他";}
+  if(/中科院|中国科学院|中国科学院大学/.test(text)&&TIER_RANK[tier]<TIER_RANK["985"]){tier="985";school="中国科学院";}
+  const uniq=[];found.forEach(f=>{if(!uniq.find(u=>u.name===f.name))uniq.push(f);});
+  return {tier,school,all:uniq};
+}
+
+/* ============ 条目解析 ============ */
+function parseEntries(text){
+  const lines=text.split(/\r?\n/);
+  const entries=[];let cur=null;
+  function flush(){if(cur){entries.push(cur);cur=null;}}
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i].trim();
+    let r=line?extractRange(line):null;
+    if(r){
+      flush();
+      const before=line.slice(0,r.idx);
+      const after=line.slice(r.idx+r.len);
+      const title=(before+" "+after).replace(/[\/|｜:：\-–—]+/g," ").replace(/\s+/g," ").trim();
+      cur={title,range:{start:r.start,end:r.end},body:[],lineNo:i};
+    }else if(cur){cur.body.push(lines[i]);}
+  }
+  flush();
+  return entries;
+}
+function classify(title,body){
+  const all=title+"\n"+body.join("\n");
+  return /博士|硕士|本科|学士|研究生|PhD|Master|Bachelor|University|大学|学院|高中|School/i.test(title+all.slice(0,200))?"edu":"work";
+}
+
+/* ============ 评分函数 ============ */
+function gradeScore(g){return {A:90,B:74,C:55,D:32,"未知":50}[g]??50;}
+function degreeScore(d){return {博士:95,硕士:75,本科:55,专科:30,未知:40}[d]??40;}
+function tierScore(t){return {C9:95,985:85,211:76,海外Top100:82,双一流:62,海外其他:48,普通本科:45,专科:30,未知:50}[t]??50;}
+function gapScore(m){return Math.max(0,Math.round(100 - m/60*100));}
+function paperScore(total,fa,isPhD){if(total===0)return isPhD?20:50;return Math.min(100,55+fa*20+total*5);}
+function clsFor(grade){return {A:"b-a",B:"b-b",C:"b-c",D:"b-d","未知":"b-c"}[grade]||"b-c";}
+function detectCandidateType(text,entries){
+  const nowM=nowMonths();
+  const internRe=/实习|Intern|兼职|part-time|Part-time|科研助理|研究助理|Trainee|RA\b/;
+  const workEntries=entries.filter(e=>classify(e.title,e.body)==="work"&&e.range);
+  let internCount=0,internMonths=0,hasFulltime=false;
+  workEntries.forEach(e=>{
+    if(internRe.test(e.title+" "+e.body.slice(0,2).join(" "))){internCount++;internMonths+=Math.max(1,toM(e.range.end)-toM(e.range.start)+1);}
+    else hasFulltime=true;
+  });
+  // 核心：判断"毕业时间"。毕业时间在未来 或 教育段结束为"至今" = 还没毕业 = 学生
+  const eduEntries=entries.filter(e=>classify(e.title,e.body)==="edu"&&e.range);
+  let highestLv=0,gradEnd=null,stillStudying=false;
+  eduEntries.forEach(e=>{
+    const lv=eduLevelOf(e.title,e.body);
+    if(lv>highestLv){highestLv=lv;gradEnd=null;stillStudying=false;}
+    if(lv===highestLv&&highestLv>0){
+      const end=e.range.end;
+      if(end&&end.now){stillStudying=true;gradEnd=null;}
+      else if(end){const em=toM(end);if(gradEnd==null||em>gradEnd)gradEnd=em;}
+    }
+  });
+  let gradM=gradEnd;
+  const gm=text.match(/(?:预计|将于|将在)?\s*(20\d{2})\s*年\s*(\d{1,2})?\s*月?\s*毕业/);
+  if(gm){const v=(+gm[1])*12+(gm[2]?+gm[2]:6);if(gradM==null||v>gradM)gradM=v;}
+  const onJobStudy=/在职(硕士|博士|研究生|MBA|读|攻读)/i.test(text);
+  const notGraduated=stillStudying||(gradM!=null&&gradM>nowM);
+  const stillStudyingText=/在读|博士在读|硕士在读|本科在读|在读博士|在读硕士|Expected.*Graduat|预计.*毕业|将于.*毕业/i.test(text);
+  const curYear=new Date().getFullYear();
+  let hasFutureYear=false;
+  for(const ym of text.matchAll(/(20\d{2})/g)){if((+ym[1])>curYear){hasFutureYear=true;break;}}
+  const degreeSignal=/硕士|博士|研究生|PhD|Master|Doctor/i.test(text);
+  let isFresher;
+  if(onJobStudy){isFresher=false;}
+  else if(notGraduated||stillStudyingText){isFresher=true;}
+  else if(hasFutureYear&&degreeSignal){isFresher=true;}
+  else{isFresher=!hasFulltime&&internCount>0;}
+  return {isFresher,internCount,internMonths,gradM,stillStudying};
+}
+
+function analyzeTitleTrajectory(workEntries){
+  const funcRules=[
+    ["技术",/技术|工程师|算法|软件|硬件|机械|结构|电气|嵌入式|视觉|控制|仿真|测试|研发|开发|架构|Engineer|Research|Scientist/i],
+    ["产品",/产品/i],
+    ["项目",/项目(经理|总监|管理|负责人)|PMO/i],
+    ["销售市场",/销售|市场|商务|渠道|运营|品牌|增长|BD/i],
+    ["管理",/经理|总监|负责人|主管|Leader|Head|Chief|VP|总裁|总经理/i]
+  ];
+  const levelRules=[
+    ["总监/负责人",/总监|负责人|首席|Chief|Head\s+of|VP|总裁|总经理|CTO|Director/i],
+    ["经理/主管",/经理|主管|Leader|Manager|Lead|主任/i],
+    ["高级",/高级|资深|Senior|Staff|Principal|Expert|专家/i],
+    ["初级",/初级|助理|Junior|Intern|实习|Associate/i],
+    ["工程师",/工程师|Engineer|开发|研发|设计/i]
+  ];
+  const LANK={"初级":0,"工程师":1,"高级":2,"经理/主管":3,"总监/负责人":4};
+  const list=workEntries.map(e=>{
+    const t=e.title||"";
+    let func="其他";
+    for(const [f,re] of funcRules){if(re.test(t)){func=f;break;}}
+    let level="工程师";
+    for(const [lv,re] of levelRules){if(re.test(t)){level=lv;break;}}
+    return {title:t,func,level};
+  });
+  const funcSet=[...new Set(list.map(x=>x.func))];
+  const seq=list.map(x=>LANK[x.level]);
+  let up=false,down=false;
+  for(let i=1;i<seq.length;i++){if(seq[i]>seq[i-1])up=true;if(seq[i]<seq[i-1])down=true;}
+  let grade,score,note;
+  if(list.length===0){grade="未知";score=50;note="无工作经历信息";}
+  else if(funcSet.length===1){
+    if(up&&!down){grade="A+";score=95;note="职能稳定（"+funcSet[0]+"），职级持续上升";}
+    else{grade="A";score=88;note="职能稳定（"+funcSet[0]+"）";}
+    if(down&&!up)note+="，职级有回落";
+  }
+  else if(funcSet.length===2){grade="C";score=55;note="职能跨 2 类（"+funcSet.join("、")+"）";}
+  else{grade="D";score=30;note="职能频繁跳变（"+funcSet.join("、")+"）";}
+  return {grade,score,note,funcSet,list};
+}
+
+function eduLevelOf(title,body){
+  const t=title+" "+(body||[]).join(" ");
+  if(/博士|PhD|Ph\.D|Doctor/i.test(t))return 4;
+  if(/硕士|研究生|Master/i.test(t))return 3;
+  if(/本科|学士|Bachelor/i.test(t))return 2;
+  if(/专科|大专|高职/i.test(t))return 1;
+  return 0;
+}
+function analyzeEduContinuity(entries){
+  const map={};
+  entries.forEach(e=>{if(!e.range)return;const lv=eduLevelOf(e.title,e.body);if(lv&&!map[lv])map[lv]=e;});
+  const tips=[];
+  const NAM={2:"本科",3:"硕士",4:"博士"};
+  const gapBetween=(a,b)=>{
+    if(map[a]&&map[b]){
+      const aEnd=toM(map[a].range.end),bStart=toM(map[b].range.start);
+      if(aEnd!=null&&bStart!=null){
+        const gap=bStart-aEnd-1;
+        if(gap>12){
+          const yrs=Math.round(gap/12*10)/10;
+          tips.push({m:"温馨提示："+NAM[a]+"（"+map[a].range.end.y+" 年毕业）与"+NAM[b]+"（"+map[b].range.start.y+" 年入学）间隔 "+yrs+" 年，建议核实学习经历是否连贯 / 是否在职学历"});
+        }
+      }
+    }
+  };
+  gapBetween(2,3);
+  gapBetween(3,4);
+  if(!map[3]&&map[2]&&map[4]){
+    const aEnd=toM(map[2].range.end),bStart=toM(map[4].range.start);
+    if(aEnd!=null&&bStart!=null){
+      const gap=bStart-aEnd-1;
+      if(gap>12){
+        const yrs=Math.round(gap/12*10)/10;
+        tips.push({m:"温馨提示：本科（"+map[2].range.end.y+" 年毕业）与博士（"+map[4].range.start.y+" 年入学）间隔 "+yrs+" 年，建议核实"});
+      }
+    }
+  }
+  let grade="A",score=90;
+  if(tips.length){grade="C";score=55;}
+  return {grade,score,tips};
+}
+
+/* ============ 主分析 ============ */
+function analyzeOne(text){
+  const name=extractName(text);
+  const degree=detectDegree(text);
+  const school=detectSchool(text);
+  const entries=parseEntries(text);
+  const isPhD=degree.level>=4;
+
+  const workEntries=entries.filter(e=>classify(e.title,e.body)==="work");
+  const workRanges=workEntries.filter(e=>e.range).map(e=>e.range);
+  const ctype=detectCandidateType(text,entries);
+  const isFresher=ctype.isFresher;
+  const titleTraj=analyzeTitleTrajectory(workEntries);
+  const eduCont=analyzeEduContinuity(entries);
+
+  let avgTenure=null,shortCount=0,shortList=[];
+  if(workRanges.length){
+    const lens=workRanges.map(r=>{const s=toM(r.start),e=toM(r.end);return e-s+1;});
+    avgTenure=Math.round(lens.reduce((a,b)=>a+b,0)/workRanges.length);
+    workEntries.forEach((e,idx)=>{if(e.range){const s=toM(e.range.start),t=toM(e.range.end),L=t-s+1;if(L<12){shortCount++;shortList.push({title:e.title,L});}}});
+  }
+  let stability="B",stabilityNote="";
+  if(avgTenure!=null){
+    if(avgTenure>=36&&shortCount===0){stability="A";stabilityNote="稳定，平均任期≥3年，无短期任职";}
+    else if(avgTenure>=24&&shortCount<=1){stability="B";stabilityNote="较稳定";}
+    else if(avgTenure>=18&&shortCount<=2){stability="C";stabilityNote="略频繁，有短期任职";}
+    else{stability="D";stabilityNote="跳槽频繁 / 短期任职偏多";}
+  }else{stability="未知";stabilityNote="无工作起止时间信息";}
+  if(isFresher){
+    const im=ctype.internMonths||0;
+    if(ctype.internCount>=2&&im>=6){stability="A";stabilityNote="学生：实习 "+ctype.internCount+" 段累计 "+Math.round(im/12*10)/10+" 年，经历密度高";}
+    else if(ctype.internCount>=1){stability="B";stabilityNote="学生：实习 "+ctype.internCount+" 段累计 "+Math.round(im/12*10)/10+" 年";}
+    else{stability="C";stabilityNote="学生：暂无实习经历，重点看科研与项目";}
+    avgTenure=null;shortCount=0;shortList=[];
+  }
+
+  const ranges=entries.filter(e=>e.range).map(e=>e.range);
+  let coherence="A",coherenceIssues=[];
+  if(!entries.length||!ranges.length){coherence="D";coherenceIssues.push("无法解析任何时间信息");}
+  else{
+    const noTime=entries.filter(e=>!e.range).length;
+    const ratio=noTime/entries.length;
+    if(ratio>0.35)coherenceIssues.push("缺失时间信息段落占比高("+Math.round(ratio*100)+"%)");
+    const sorted=[...workRanges].sort((a,b)=>toM(a.start)-toM(b.start));
+    for(let i=0;i<sorted.length-1;i++)for(let j=i+1;j<sorted.length;j++){
+      const a=sorted[i],b=sorted[j],ae=toM(a.end),bs=toM(b.start);
+      if(bs<ae){const overlap=Math.min(ae,toM(b.end))-bs+1;if(overlap>6)coherenceIssues.push("时间重叠："+a.start.y+"~"+(a.end.now?"至今":a.end.y)+" 与 "+b.start.y+"~"+(b.end.now?"至今":b.end.y));}
+    }
+    if(coherenceIssues.length===0)coherence="A";
+    else if(coherenceIssues.length===1)coherence="B";
+    else if(coherenceIssues.length<=2)coherence="C";
+    else coherence="D";
+  }
+
+  let maxGap=0,gaps=[];
+  const workIv=workRanges.map(r=>({s:toM(r.start),e:toM(r.end)})).filter(x=>x.s&&x.e).sort((a,b)=>a.s-b.s);
+  if(workIv.length){
+    // 工作段之间的空窗
+    for(let i=0;i<workIv.length-1;i++){
+      const gap=workIv[i+1].s-workIv[i].e-1;
+      if(gap>0){gaps.push({gap,from:workIv[i].e,to:workIv[i+1].s});if(gap>maxGap)maxGap=gap;}
+    }
+    // 最高学历毕业 → 首份工作
+    if(!isFresher){
+      const eduEnds=entries.filter(e=>classify(e.title,e.body)==="edu"&&e.range).map(e=>toM(e.range.end)).filter(x=>x!=null);
+      const gradEnd=eduEnds.length?Math.max.apply(null,eduEnds):null;
+      if(gradEnd!=null){
+        const gap=workIv[0].s-gradEnd-1;
+        if(gap>0){gaps.push({gap,from:gradEnd,to:workIv[0].s});if(gap>maxGap)maxGap=gap;}
+      }
+    }
+    // 最后一段工作结束到现在
+    const nm=nowMonths(),lastE=workIv[workIv.length-1].e;
+    if(nm-lastE>0){const gap=nm-lastE;gaps.push({gap,from:lastE,to:nm});if(gap>maxGap)maxGap=gap;}
+  }
+  if(isFresher){maxGap=0;gaps=[];}
+
+  let venueHits=[];let firstAuthor=0;
+  VENUE_TOP.forEach(v=>{
+    const re=new RegExp("\\b"+v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","gi");
+    let m;while((m=re.exec(text))&&venueHits.length<60){
+      const start=Math.max(0,m.index-260),end=Math.min(text.length,m.index+80);
+      const ctx=text.slice(start,end);
+      const fa=/第一作者|一作|共同一作|共一|first author|Oral|Spotlight|Best\s*Paper|equal contribution/i.test(ctx);
+      let lead=false;
+      if(name){
+        const nameIdx=ctx.indexOf(name);
+        if(nameIdx>=0&&nameIdx<m.index-start){
+          const before=ctx.slice(0,nameIdx);
+          const authors=before.match(/[\u4e00-\u9fa5]{2,4}|[A-Z][a-z]+/g)||[];
+          const hasOtherAuthor=before.trim().length>2&&authors.some(a=>a!==name);
+          lead=!hasOtherAuthor;
+        }
+      }
+      const isFA=fa||lead;
+      venueHits.push({venue:v,year:(text.slice(m.index,m.index+60).match(/(20|19)\d{2}/)||[""])[0],fa:isFA});
+      if(isFA)firstAuthor++;
+    }
+  });
+  const venueCount={};venueHits.forEach(h=>{const v=VENUE_ALIAS[h.venue]||h.venue;venueCount[v]=(venueCount[v]||0)+1;});
+  const totalPapers=venueHits.length;
+
+  const score={};DIRS.forEach(d=>{let hit=0;d[1].forEach(k=>{if(text.toLowerCase().includes(k.toLowerCase()))hit++;});if(hit>0)score[d[0]]=hit*1+(hit>1?1:0);});
+  const topDirs=Object.entries(score).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+  let direction=topDirs.join("+");
+  if(direction.length>20)direction=topDirs.slice(0,2).join("+");
+  if(direction.length>20)direction=direction.slice(0,20);
+  if(!direction)direction="未识别（需人工补）";
+
+  const risks=[];
+  if(degree.level<2)risks.push({t:"r",m:"学历低于本科（"+degree.degree+"）"});
+  if(degree.fulltime==="否")risks.push({t:"r",m:"非全日制学历（在职/函授/自考等）"});
+  if(coherence==="D")risks.push({t:"r",m:"简历时间线严重缺失/混乱"});
+  if(!isFresher&&avgTenure!=null&&avgTenure<24)risks.push({t:"warn",m:"平均任期 "+(avgTenure/12).toFixed(1)+" 年，跳槽偏频繁"});
+  if(!isFresher&&shortCount>0)risks.push({t:"warn",m:shortCount+" 段任职 <1 年"+(shortList.length?("（"+shortList.map(s=>s.title||"?").join("、")+"）"):"")});
+  if(!isFresher&&maxGap>=6)risks.push({t:"warn",m:"存在 ≥6 个月空窗（最长 "+Math.round(maxGap/12*10)/10+" 年）"});
+  if(!isFresher&&titleTraj.grade==="C")risks.push({t:"warn",m:"title 轨迹：职能跨 2 类（"+titleTraj.funcSet.join("、")+"），建议核实职业路径"});
+  if(!isFresher&&titleTraj.grade==="D")risks.push({t:"warn",m:"title 轨迹：职能频繁跳变（"+titleTraj.funcSet.join("、")+"），预警"});
+  if(school.tier==="普通本科"||school.tier==="专科"||school.tier==="海外其他")risks.push({t:"tip",m:"温馨提示：学校层次一般（"+TIER_LABEL[school.tier]+"）"});
+  if(school.tier==="未知"&&degree.level>0)risks.push({t:"tip",m:"温馨提示：未识别出学校层次，建议人工确认"});
+  if(isPhD&&totalPapers===0)risks.push({t:"tip",m:"温馨提示：博士背景但未识别出顶会/顶刊成果"});
+  if(totalPapers>0&&firstAuthor===0)risks.push({t:"tip",m:"温馨提示：有顶会但未见一作，建议核对贡献度"});
+  eduCont.tips.forEach(x=>risks.push({t:"tip",m:x.m}));
+  if(isFresher)risks.push({t:"ok",m:"学生身份：跳槽频繁与空窗不适用，重点看实习含金量、论文成果与毕业时间"});
+  if(!risks.length)risks.push({t:"ok",m:"未发现明显红线，可推进"});
+
+  return {name,degree,school,avgTenure,workCount:workRanges.length,stability,stabilityNote,coherence,coherenceIssues,maxGap,gaps,totalPapers,firstAuthor,venueCount,direction,risks,entryCount:entries.length,isPhD,isFresher,internCount:ctype.internCount,internMonths:ctype.internMonths,gradM:ctype.gradM,stillStudying:ctype.stillStudying,titleTraj,eduCont};
+}
+
+/* ============ 维度构建 ============ */
+function fmtMon(m){if(m==null)return "—";const y=Math.floor(m/12),mm=m%12;return y+"年"+(mm?mm+"月":"");}
+function buildDims(r){
+  const gapBadge=r.maxGap===0?"无":(r.maxGap<6?"短":(r.maxGap<12?"中":"长"));
+  const gapCls=r.maxGap===0?"b-a":(r.maxGap<6?"b-a":(r.maxGap<12?"b-c":"b-d"));
+  const paperBadge=r.totalPapers>0?(r.totalPapers+"篇"):(r.isPhD?"0":"无");
+  const paperCls=r.totalPapers>0?"b-a":"b-c";
+  const degreeCls={博士:"b-a",硕士:"b-b",本科:"b-b",专科:"b-c",未知:"b-c"}[r.degree.degree]||"b-c";
+  const tierCls={C9:"b-a",985:"b-a",211:"b-b",海外Top100:"b-a",双一流:"b-b",海外其他:"b-c",普通本科:"b-c",专科:"b-d",未知:"b-c"}[r.school.tier]||"b-c";
+  const tt=r.titleTraj||{grade:"未知",score:50,note:"",funcSet:[],list:[]};
+  const ttCls=(tt.grade==="A+"||tt.grade==="A")?"b-a":(tt.grade==="C"?"b-c":(tt.grade==="D"?"b-d":"b-c"));
+  const ec=r.eduCont||{grade:"A",score:90,tips:[]};
+  const ecCls=ec.grade==="A"?"b-a":"b-c";
+  const paperDims={label:"学术成果",score:paperScore(r.totalPapers,r.firstAuthor,r.isPhD),badge:paperBadge,badgeClass:paperCls,
+     summary:"顶会一作 "+r.firstAuthor+" 篇",
+     detail:Object.keys(r.venueCount).length?("成果："+Object.entries(r.venueCount).map(([v,c])=>v+"×"+c).join("  ")):(r.isPhD?"博士未识别出顶会/顶刊":"未识别出顶会/顶刊成果")};
+  const eduDim={label:"学历",score:degreeScore(r.degree.degree),badge:r.degree.degree,badgeClass:degreeCls,
+     summary:(r.degree.fulltime==="是"?"全日制":r.degree.fulltime==="否"?"非全日制":"全日制存疑"),
+     detail:"最高学历 "+r.degree.degree+"，"+(r.degree.fulltime==="是"?"全日制":r.degree.fulltime==="否"?"非全日制（在职/函授/自考等）":"未标注是否全日制，需人工确认")};
+  const schoolDim={label:"学校层次",score:tierScore(r.school.tier),badge:TIER_LABEL[r.school.tier],badgeClass:tierCls,
+     summary:r.school.school||"未识别具体院校",
+     detail:r.school.all.length?("命中院校："+r.school.all.map(s=>s.name).join("、")):"未匹配到院校名单，需人工确认"};
+  const eduContDim={label:"学历连续性",score:ec.score,badge:ec.grade,badgeClass:ecCls,
+     summary:ec.tips.length?("有 "+ec.tips.length+" 处断层"):"连贯",
+     detail:ec.tips.length?ec.tips.map(t=>t.m).join("；"):"本科 / 硕士 / 博士衔接连贯"};
+  const dims=[];
+  if(r.isFresher){
+    const im=r.internMonths||0;
+    dims.push(
+      schoolDim,
+      eduDim,
+      paperDims,
+      {label:"经历密度",
+       score:(r.internCount>=2&&im>=6)?90:(r.internCount>=1?70:45),
+       badge:(r.internCount||0)+"段",
+       badgeClass:(r.internCount||0)>=2?"b-a":((r.internCount||0)>=1?"b-b":"b-c"),
+       summary:"实习累计 "+Math.round(im/12*10)/10+" 年",
+       detail:"实习 "+(r.internCount||0)+" 段，累计 "+Math.round(im/12*10)/10+" 年"+(r.stabilityNote?"。"+r.stabilityNote:"")},
+      {label:"方向匹配",
+       score:(r.direction&&r.direction!=="未识别（需人工补）")?75:45,
+       badge:(r.direction&&r.direction!=="未识别（需人工补）")?"已识别":"待定",
+       badgeClass:(r.direction&&r.direction!=="未识别（需人工补）")?"b-b":"b-c",
+       summary:r.direction,
+       detail:"基于简历关键词命中的研究方向（20字），供岗位匹配参考"},
+      {label:"毕业时间",
+       score:r.stillStudying?82:(r.gradM?90:70),
+       badge:r.stillStudying?"在读":(r.gradM?fmtMon(r.gradM):"未明"),
+       badgeClass:"b-b",
+       summary:r.stillStudying?"在读中（未毕业）":(r.gradM?"预计毕业 "+fmtMon(r.gradM):"未识别毕业时间"),
+       detail:r.stillStudying?"教育经历截止「至今」，仍在读；在校期间假期空窗不计入空窗期评估":(r.gradM?((r.gradM>nowMonths()?"预计 ":"")+fmtMon(r.gradM)+" 毕业；在校期间假期空窗不计入空窗期评估"):"未识别出毕业时间，建议人工确认")},
+      eduContDim
+    );
+  }else{
+    dims.push(
+      {label:"履历稳定性",score:gradeScore(r.stability),badge:r.stability,badgeClass:clsFor(r.stability),
+       summary:r.avgTenure?("平均任期 "+(r.avgTenure/12).toFixed(1)+" 年 · "+r.workCount+" 段"):"无时间信息",
+       detail:r.stabilityNote+(r.workCount?(" · 共 "+r.workCount+" 段工作经历"):"")},
+      eduDim,
+      schoolDim,
+      {label:"title轨迹",score:tt.score,badge:tt.grade,badgeClass:ttCls,
+       summary:tt.note,
+       detail:tt.list.length?("各段："+tt.list.map(x=>x.title+"（"+x.func+"·"+x.level+"）").join("；")):"无工作经历"},
+      {label:"连贯性",score:gradeScore(r.coherence),badge:r.coherence,badgeClass:clsFor(r.coherence),
+       summary:r.entryCount+" 段经历解析",
+       detail:r.coherenceIssues.length?r.coherenceIssues.join("；"):"时间线清晰、无重叠断裂"},
+      {label:"空窗期",score:gapScore(r.maxGap),badge:gapBadge,badgeClass:gapCls,
+       summary:"最长 "+fmtMon(r.maxGap),
+       detail:r.gaps.length?("空窗明细："+r.gaps.map(g=>fmtMon(g.from)+" → "+fmtMon(g.to)).join("；")):"未发现空窗"},
+      eduContDim,
+      paperDims
+    );
+  }
+  return dims;
+}
+
+/* ============ 雷达图渲染 ============ */
+function renderRadar(containerId,dims,name,isFresher){
+  const W=680,H=560,cx=340,cy=280,R=185,n=dims.length;
+  const angle=i=>-Math.PI/2+i*2*Math.PI/n;
+  const pt=(i,frac)=>[cx+Math.cos(angle(i))*R*frac,cy+Math.sin(angle(i))*R*frac];
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" class="radar-svg">';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const pts=[];for(let i=0;i<n;i++){const p=pt(i,f);pts.push(p);}
+    svg+='<polygon points="'+pts.map(p=>Math.round(p[0])+','+Math.round(p[1])).join(' ')+'" class="grid-poly"/>';
+  });
+  for(let i=0;i<n;i++){const p=pt(i,1);svg+='<line x1="'+cx+'" y1="'+cy+'" x2="'+Math.round(p[0])+'" y2="'+Math.round(p[1])+'" class="axis"/>';}
+  const dp=[];for(let i=0;i<n;i++){const frac=Math.max(0.06,dims[i].score/100);const p=pt(i,frac);dp.push(p);}
+  svg+='<polygon points="'+dp.map(p=>Math.round(p[0])+','+Math.round(p[1])).join(' ')+'" class="data-poly"/>';
+  for(let i=0;i<n;i++){const p=pt(i,Math.max(0.06,dims[i].score/100));svg+='<circle cx="'+Math.round(p[0])+'" cy="'+Math.round(p[1])+'" r="5" class="dot"/>';}
+  for(let i=0;i<n;i++){const p=pt(i,1.2);svg+='<text x="'+Math.round(p[0])+'" y="'+Math.round(p[1])+'" class="axis-label" text-anchor="middle">'+esc(dims[i].label)+'</text>';}
+  svg+='<text x="'+cx+'" y="'+(cy-6)+'" class="center-name" text-anchor="middle">'+esc(name||"候选人")+'</text>';
+  svg+='<text x="'+cx+'" y="'+(cy+14)+'" class="center-sub" text-anchor="middle">'+(isFresher?'学生':'社招')+'</text>';
+  svg+='</svg>';
+  const wrap=document.getElementById(containerId);
+  wrap.innerHTML=svg;
+  dims.forEach((d,i)=>{
+    const p=pt(i,1);const a=angle(i);const c=Math.cos(a),s=Math.sin(a);
+    let ox=0,oy=0;
+    if(Math.abs(c)>0.5)ox=c>0?78:-78;else oy=s>0?78:-78;
+    const left=clamp(p[0]+ox,82,W-82);
+    const top=clamp(p[1]+oy,42,H-42);
+    const card=document.createElement("div");
+    card.className="dimcard";
+    card.style.left=left+"px";card.style.top=top+"px";
+    const hasDetail=d.detail&&d.detail.length>0;
+    card.innerHTML=
+      '<div class="dimcard-h"><span class="dimcard-label">'+esc(d.label)+'</span><span class="badge '+d.badgeClass+'">'+esc(d.badge)+'</span></div>'+
+      '<div class="dimcard-sum">'+esc(d.summary)+'</div>'+
+      (hasDetail?'<div class="dimcard-detail collapsed">'+esc(d.detail)+'</div><div class="dimcard-toggle">详情</div>':'');
+    wrap.appendChild(card);
+  });
+  wrap.addEventListener("click",e=>{
+    const card=e.target.closest(".dimcard");if(!card)return;
+    const det=card.querySelector(".dimcard-detail");if(!det)return;
+    const collapsed=det.classList.contains("collapsed");
+    det.classList.toggle("collapsed",!collapsed);
+    card.classList.toggle("expanded",collapsed);
+    const tg=card.querySelector(".dimcard-toggle");if(tg)tg.textContent=collapsed?"收起":"详情";
+  });
+}
+
+/* ============ 渲染 ============ */
+function render(results,meta){
+  const box=document.getElementById("results");
+  document.getElementById("resultMeta").textContent=meta;
+  if(!results.length){box.innerHTML='<div class="empty">未解析出候选人，请检查分隔符或文本格式。</div>';return;}
+  let html='<div class="panel" style="padding:0;overflow:auto"><table class="summary-table"><thead><tr><th>姓名</th><th>身份</th><th>学历</th><th>学校层次</th><th>稳定性/密度</th><th>平均任期</th><th>连贯性</th><th>最长空窗</th><th>顶会</th><th>一作</th><th>研究方向(20字)</th><th>硬过滤</th></tr></thead><tbody>';
+  results.forEach(r=>{
+    const pass=hardFilter(r);
+    html+='<tr><td><b>'+esc(r.name||"未识别")+'</b></td><td>'+(r.isFresher?'<span class="badge b-b">学生</span>':'社招')+'</td><td>'+esc(r.degree.degree)+'</td><td>'+esc(TIER_LABEL[r.school.tier])+'</td><td>'+badge(r.stability)+'</td><td>'+(r.avgTenure?Math.round(r.avgTenure/12*10)/10+"年":"—")+'</td><td>'+badge(r.coherence)+'</td><td>'+(r.isFresher?"—":(r.maxGap?fmtMon(r.maxGap):"0"))+'</td><td>'+r.totalPapers+'</td><td>'+r.firstAuthor+'</td><td>'+esc(r.direction)+'</td><td>'+pass.html+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+
+  results.forEach((r,idx)=>{
+    const dims=buildDims(r);
+    const cid="radar-"+idx;
+    html+='<div class="card"><div class="card-head">'+
+      '<span class="name">'+esc(r.name||("候选人"+(idx+1)))+'</span>'+
+      '<span class="badge '+(r.isFresher?'b-b':'b-a')+'">'+(r.isFresher?'学生':'社招')+'</span>'+
+      '<span class="dir-chip">'+esc(r.direction)+'</span>'+
+      '</div><div class="card-body">'+
+      '<div class="radar-wrap" id="'+cid+'"></div>'+
+      '<div class="risk-section"><div class="rt">风险 / 红线提示</div><ul class="risk-list">'+
+      r.risks.map(x=>'<li class="'+x.t+'">'+esc(x.m)+'</li>').join("")+'</ul></div>'+
+      '</div></div>';
+  });
+  box.innerHTML=html;
+  results.forEach((r,idx)=>{
+    const dims=buildDims(r);
+    renderRadar("radar-"+idx,dims,r.name,r.isFresher);
+  });
+}
+
+function badge(grade){return '<span class="badge '+(clsFor(grade))+'">'+grade+'</span>';}
+
+function hardFilter(r){
+  const f={bachelor:document.getElementById("f-bachelor").checked,fulltime:document.getElementById("f-fulltime").checked,elite:document.getElementById("f-elite").checked,tenure:document.getElementById("f-tenure").checked,gap:document.getElementById("f-gap").checked};
+  if(!(f.bachelor||f.fulltime||f.elite||f.tenure||f.gap))return {ok:true,html:'<span class="badge b-b">未开启</span>'};
+  const fail=[];
+  if(f.bachelor&&r.degree.level<2)fail.push("学历<本科");
+  if(f.fulltime&&r.degree.fulltime!=="是")fail.push("非全日制");
+  if(f.elite&&!["C9","985","211","海外Top100"].includes(r.school.tier))fail.push("非985/211/海外Top100");
+  if(f.tenure&&!r.isFresher&&r.avgTenure!=null&&r.avgTenure<24)fail.push("平均任期<24月");
+  if(f.gap&&!r.isFresher&&r.maxGap>=6)fail.push("有≥6月空窗");
+  if(fail.length)return {ok:false,html:'<span class="badge pill-fail">不通过</span><div style="font-size:11px;color:var(--sub);margin-top:2px">'+fail.join("、")+'</div>'};
+  return {ok:true,html:'<span class="badge pill-pass">通过</span>'};
+}
+
+/* ============ 导出 ============ */
+function splitInput(raw,sep){
+  const s=sep.trim();
+  let parts;
+  if(raw.includes(s))parts=raw.split(s);
+  else if(/^---+$/m.test(raw))parts=raw.split(/^---+$/m);
+  else parts=[raw];
+  return parts.map(p=>p.trim()).filter(p=>p.length>10);
+}
+function run(){
+  const raw=document.getElementById("src").value;
+  const sep=document.getElementById("sep").value||"=====";
+  const parts=splitInput(raw,sep);
+  const results=parts.map(analyzeOne);
+  render(results,parts.length+" 份简历 · 解析完成");
+}
+function toCsv(results){
+  const head=["姓名","最高学历","全日制","学校层次","毕业/最高院校","履历稳定性","平均任期(月)","任职段数","简历连贯性","最长空窗(月)","顶会篇数","顶会一作","研究方向20字","风险提示"];
+  const rows=results.map(r=>[r.name||"未识别",r.degree.degree,r.degree.fulltime,TIER_LABEL[r.school.tier],r.school.school,r.stability,r.avgTenure||"",r.workCount,r.coherence,r.maxGap||0,r.totalPapers,r.firstAuthor,r.direction,r.risks.filter(x=>x.t!=="ok").map(x=>x.m).join("；")]);
+  const q=v=>{const s=String(v==null?"":v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  return "\ufeff"+[head,...rows].map(row=>row.map(q).join(",")).join("\r\n");
+}
+function toMd(results){
+  const lines=[];
+  results.forEach((r,i)=>{
+    lines.push("## "+(r.name||("候选人"+(i+1))));
+    lines.push("");
+    lines.push("| 维度 | 结果 |");lines.push("|---|---|");
+    lines.push("| 学历 | "+r.degree.degree+"（"+(r.degree.fulltime==="是"?"全日制":r.degree.fulltime==="否"?"非全日制":"存疑")+"） |");
+    lines.push("| 学校层次 | "+TIER_LABEL[r.school.tier]+(r.school.school?" · "+r.school.school:"")+" |");
+    lines.push("| 履历稳定性 | "+r.stability+" · 平均任期 "+(r.avgTenure?Math.round(r.avgTenure/12*10)/10+" 年":"—")+" · "+r.workCount+" 段 |");
+    lines.push("| 简历连贯性 | "+r.coherence+(r.coherenceIssues.length?" · "+r.coherenceIssues.join("；"):"")+" |");
+    lines.push("| 空窗期 | 最长 "+fmtMon(r.maxGap)+" |");
+    lines.push("| 顶会一作 | "+r.totalPapers+" 篇，一作 "+r.firstAuthor+" 篇 |");
+    lines.push("| 研究方向 | "+r.direction+" |");
+    lines.push("");lines.push("风险："+r.risks.map(x=>x.m).join("；"));lines.push("");
+  });
+  return lines.join("\n");
+}
+function download(name,content,mime){const blob=new Blob([content],{type:mime||"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+
+/* ============ PDF 支持 ============ */
+function ensurePdfLib(){
+  return new Promise((res,rej)=>{
+    if(window.pdfjsLib)return res(window.pdfjsLib);
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
+    s.onload=()=>{pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";res(window.pdfjsLib);};
+    s.onerror=()=>rej(new Error("PDF 解析引擎加载失败，请联网后重试"));
+    document.head.appendChild(s);
+  });
+}
+function pdfItemsToLines(items){
+  const rows=[];
+  items.forEach(it=>{
+    if(!it.str||!it.str.trim())return;
+    const y=it.transform?it.transform[5]:0,x=it.transform?it.transform[4]:0;
+    let row=rows.find(r=>Math.abs(r.y-y)<2.5);
+    if(!row){row={y,cells:[]};rows.push(row);}
+    // 记录文本项宽度：日期常被拆成 "2026" ".0" "8" 等片段，拼接时靠间隙判断是否加空格
+    row.cells.push({x,str:it.str,w:it.width||(it.str.length*6)});
+  });
+  rows.sort((a,b)=>b.y-a.y);
+  return rows.map(r=>{
+    const cells=r.cells.sort((a,b)=>a.x-b.x);
+    let s=cells[0].str,prevX=cells[0].x+cells[0].w;
+    for(let i=1;i<cells.length;i++){
+      const c=cells[i];
+      // 间隙小说明原本是连着的（如 2026.08 被拆成 2026/.0/8），直接拼接不加空格
+      if(c.x-prevX>1.5)s+=" ";
+      s+=c.str;
+      prevX=c.x+c.w;
+    }
+    return s;
+  });
+}
+async function extractPdfText(buf){
+  const lib=await ensurePdfLib();
+  const doc=await lib.getDocument({data:buf}).promise;
+  let lines=[];
+  for(let i=1;i<=doc.numPages;i++){
+    const page=await doc.getPage(i);
+    const c=await page.getTextContent();
+    lines=lines.concat(pdfItemsToLines(c.items),[""]);
+  }
+  return lines.join("\n");
+}
+
+/* ============ 事件绑定 ============ */
+function maskText(t,maskName){
+  // 邮箱：保留域名，打码本地名
+  t=t.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,m=>{
+    const at=m.indexOf("@"),local=m.slice(0,at);
+    return (local.length>2?local[0]+"***":"***")+m.slice(at);
+  });
+  // 手机号
+  t=t.replace(/(?<!\d)1[3-9]\d{9}(?!\d)/g,m=>m.slice(0,3)+"****"+m.slice(7));
+  // 座机
+  t=t.replace(/(?<!\d)0\d{2,3}-\d{7,8}(?!\d)/g,m=>m.slice(0,m.length-4)+"****");
+  // 身份证
+  t=t.replace(/(?<!\d)\d{6}(?:19|20)\d{2}(?:0[1-9]|1[0-2])\d{2}\d{3}[\dXx](?!\d)/g,m=>m.slice(0,6)+"********"+m.slice(-4));
+  // 微信 / QQ 号
+  t=t.replace(/(微信|微信号|WeChat|wechat|QQ|QQ号)\s*号?\s*[:：]?\s*[A-Za-z0-9_-]{5,}/g,m=>m.replace(/[A-Za-z0-9_-]{5,}$/,"****"));
+  if(maskName){
+    // 姓名打码：先找显式姓名，再按首行中文名
+    const explicit=t.match(/姓名\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/);
+    let nm=explicit?explicit[1]:"";
+    if(!nm){
+      const lines=t.split(/\r?\n/);
+      for(let i=0;i<Math.min(6,lines.length);i++){
+        const l=lines[i].trim();
+        const mm=l.match(/^([\u4e00-\u9fa5]{2,4})(?=[\s|｜,，:：]|$)/);
+        if(mm&&!/^(简历|个人简历|求职|姓名|电话|手机|邮箱|性别|年龄|地址)/.test(mm[1])){nm=mm[1];break;}
+      }
+    }
+    if(nm&&nm.length>=2){t=t.split(nm).join(nm[0]+"**");}
+  }
+  return t;
+}
+document.getElementById("btnMask").onclick=()=>{
+  const ta=document.getElementById("src");
+  const maskName=document.getElementById("f-maskname").checked;
+  ta.value=maskText(ta.value,maskName);
+  document.getElementById("countLabel").textContent=ta.value.length+" 字";
+};
+document.getElementById("btnRun").onclick=run;
+document.getElementById("btnClear").onclick=()=>{document.getElementById("src").value="";document.getElementById("countLabel").textContent="0 字";document.getElementById("results").innerHTML='<div class="empty">已清空。</div>';};
+document.getElementById("btnSample").onclick=()=>{document.getElementById("src").value=SAMPLE;document.getElementById("countLabel").textContent=SAMPLE.length+" 字";run();};
+document.getElementById("btnCsv").onclick=()=>{
+  const raw=document.getElementById("src").value;const sep=document.getElementById("sep").value||"=====";
+  const results=splitInput(raw,sep).map(analyzeOne);
+  if(!results.length)return alert("无内容可导出");
+  download("简历速析.csv",toCsv(results),"text/csv;charset=utf-8");
+};
+document.getElementById("btnMd").onclick=()=>{
+  const raw=document.getElementById("src").value;const sep=document.getElementById("sep").value||"=====";
+  const results=splitInput(raw,sep).map(analyzeOne);
+  if(!results.length)return alert("无内容可导出");
+  navigator.clipboard.writeText(toMd(results)).then(()=>alert("Markdown 已复制到剪贴板")).catch(()=>alert("复制失败，请手动"));
+};
+document.getElementById("src").addEventListener("input",e=>{document.getElementById("countLabel").textContent=e.target.value.length+" 字";});
+const dz=document.getElementById("dz"),file=document.getElementById("file");
+dz.onclick=()=>file.click();
+file.onchange=()=>{readFiles(file.files);};
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("on");}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("on");}));
+dz.addEventListener("drop",e=>{const fs=e.dataTransfer.files;if(fs&&fs.length)readFiles(fs);});
+async function readFiles(fs){
+  const box=document.getElementById("results");
+  box.innerHTML='<div class="loading">正在读取并解析文件…</div>';
+  const out=[];
+  for(const f of fs){
+    try{
+      if(/\.pdf$/i.test(f.name)){
+        const buf=await f.arrayBuffer();
+        const text=await extractPdfText(buf);
+        out.push(text);
+      }else{
+        out.push(await f.text());
+      }
+    }catch(err){
+      out.push("【文件读取失败："+f.name+"】"+err.message);
+    }
+  }
+  document.getElementById("src").value=out.join("\n\n=====\n\n");
+  document.getElementById("countLabel").textContent=out.join("").length+" 字";
+}
+
+/* ============ 示例简历 ============ */
+const SAMPLE=`张伟
+男 | 1988 | 上海 | 138****1234 | zw@mail.com
+
+教育经历
+2010.09 - 2014.06  哈尔滨工业大学  机械设计制造及其自动化  本科
+2014.09 - 2017.06  哈尔滨工业大学  机械工程  硕士
+
+工作经历
+2017.07 - 2020.03  某灵巧手创业公司  结构工程师
+主导五指灵巧手关节模组设计，谐波减速+滚柱丝杠传动，负责 DFM 与量产导入。
+2020.05 - 至今  上海某机器人公司  末端执行器专家 / 主任工程师
+负责电动夹爪、末端执行器结构设计与力控打磨场景落地。
+
+科研成果
+第一作者, DexHand: A Dexterous Anthropomorphic Hand. ICRA 2020.
+Wei Zhang, San Li, Si Wang. Modular Actuator Design for Humanoid. IROS 2022.
+
+=====
+
+张三
+男 | 1996 | 苏州
+
+2015.09 - 2019.06  某大学  电子信息工程  本科
+2019.08 - 2020.11  A公司  硬件工程师
+2021.01 - 2022.03  B公司  嵌入式工程师
+2022.05 - 至今  C公司  嵌入式软件
+`;
+
+/* ========== Tab 切换 ========== */
+(function () {
+    var btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(function (b) {
+        b.addEventListener('click', function () {
+            var name = b.getAttribute('data-tool');
+            document.querySelectorAll('.tool-panel').forEach(function (p) {
+                p.classList.remove('active');
+            });
+            document.getElementById('tool-' + name).classList.add('active');
+            btns.forEach(function (x) { x.classList.remove('active'); });
+            b.classList.add('active');
+        });
+    });
+})();
+</script>
 </body>
 </html>
