@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>简历筛选与速析 · 粉蓝工作台</title>
+<title>简历筛选与速析 · 粉色工作台</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
@@ -17,9 +17,9 @@
     --primary: #e75480;
     --primary-light: #f4a7c0;
     --primary-dark: #c23a68;
-    --bg-main: #eef5fb;
+    --bg-main: #fdf7f9;
     --bg-card: rgba(255, 255, 255, 0.92);
-    --bg-card-solid: #e4eef8;
+    --bg-card-solid: #fdeef3;
     --bg-section: rgba(255, 255, 255, 0.75);
     --text-primary: #2b1e24;
     --text-secondary: #8a6d78;
@@ -33,8 +33,8 @@
     --glow-cyan: rgba(255, 143, 179, 0.2);
     --border-subtle: rgba(0, 0, 0, 0.1);
     /* resume-analyzer 兼容变量 */
-    --bg: #eef5fb; --card: #ffffff; --line: #dce8f4; --ink: #2b1e24; --sub: #8a6d78;
-    --brand: #e75480; --brand-soft: #e3eef9; --good: #1a9e5c; --good-soft: #e7f6ee;
+    --bg: #fdf7f9; --card: #ffffff; --line: #f3e4e9; --ink: #2b1e24; --sub: #8a6d78;
+    --brand: #e75480; --brand-soft: #fdeef3; --good: #1a9e5c; --good-soft: #e7f6ee;
     --warn: #e08600; --warn-soft: #fdf2e0; --bad: #d9372b; --bad-soft: #fdeceb;
     --muted: #b69aa6; --radius: 12px;
 }
@@ -54,9 +54,9 @@ body::before {
     width: 100%;
     height: 100%;
     background:
-        radial-gradient(ellipse at 20% 20%, rgba(125, 176, 226, 0.16) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 80%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(143, 194, 238, 0.08) 0%, transparent 70%);
+        radial-gradient(ellipse at 20% 20%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(255, 143, 179, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(209, 107, 158, 0.03) 0%, transparent 70%);
     pointer-events: none;
     z-index: -1;
 }
@@ -76,7 +76,7 @@ body::after {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #e75480 0%, #7fb2e5 100%);
+  background: linear-gradient(135deg, #e75480 0%, #c23a68 100%);
   color: #fff;
   padding: 18px 28px;
   display: flex;
@@ -84,7 +84,7 @@ body::after {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  box-shadow: 0 4px 20px rgba(127, 178, 229, 0.35);
+  box-shadow: 0 4px 20px rgba(231, 84, 128, 0.3);
   position: sticky;
   top: 0;
   z-index: 1500;
@@ -105,7 +105,7 @@ body::after {
 .tool-panel.active { display: block; }
 #tool-analyzer { padding: 0 0 60px; }
 
-/* ========== 智能简历筛选系统（粉蓝化） ========== */
+/* ========== 智能简历筛选系统（粉色化） ========== */
 
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
 
@@ -119,9 +119,9 @@ body::after {
     --primary: #e75480;
     --primary-light: #f4a7c0;
     --primary-dark: #c23a68;
-    --bg-main: #eef5fb;
+    --bg-main: #fdf7f9;
     --bg-card: rgba(255, 255, 255, 0.92);
-    --bg-card-solid: #e4eef8;
+    --bg-card-solid: #fdeef3;
     --bg-section: rgba(255, 255, 255, 0.75);
     --text-primary: #2b1e24;
     --text-secondary: #8a6d78;
@@ -135,8 +135,8 @@ body::after {
     --glow-cyan: rgba(255, 143, 179, 0.2);
     --border-subtle: rgba(0, 0, 0, 0.1);
     /* resume-analyzer 兼容变量 */
-    --bg: #eef5fb; --card: #ffffff; --line: #dce8f4; --ink: #2b1e24; --sub: #8a6d78;
-    --brand: #e75480; --brand-soft: #e3eef9; --good: #1a9e5c; --good-soft: #e7f6ee;
+    --bg: #fdf7f9; --card: #ffffff; --line: #f3e4e9; --ink: #2b1e24; --sub: #8a6d78;
+    --brand: #e75480; --brand-soft: #fdeef3; --good: #1a9e5c; --good-soft: #e7f6ee;
     --warn: #e08600; --warn-soft: #fdf2e0; --bad: #d9372b; --bad-soft: #fdeceb;
     --muted: #b69aa6; --radius: 12px;
 }
@@ -158,9 +158,9 @@ body::after {
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(ellipse at 20% 20%, rgba(125, 176, 226, 0.16) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(143, 194, 238, 0.08) 0%, transparent 70%);
+                radial-gradient(ellipse at 20% 20%, rgba(231, 84, 128, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255, 143, 179, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(209, 107, 158, 0.03) 0%, transparent 70%);
             pointer-events: none;
             z-index: -1;
         }
@@ -201,7 +201,7 @@ body::after {
             transform: translateX(-50%);
             width: 80%;
             height: 100%;
-            background: linear-gradient(180deg, rgba(127, 178, 229, 0.12) 0%, transparent 100%);
+            background: linear-gradient(180deg, rgba(231, 84, 128, 0.08) 0%, transparent 100%);
             border-radius: 0;
             z-index: -1;
         }
@@ -321,7 +321,7 @@ body::after {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(127, 178, 229, 0.16) 0%, transparent 100%);
+            background: linear-gradient(135deg, rgba(231, 84, 128, 0.1) 0%, transparent 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -388,7 +388,7 @@ body::after {
         }
 
         .job-tag {
-            background: rgba(127, 178, 229, 0.14);
+            background: rgba(231, 84, 128, 0.08);
             border: none;
             padding: 4px 12px;
             border-radius: 0;
@@ -397,7 +397,7 @@ body::after {
         }
 
         .job-card.selected .job-tag {
-            background: rgba(143, 194, 238, 0.20);
+            background: rgba(255, 143, 179, 0.15);
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
         }
@@ -481,7 +481,7 @@ body::after {
         }
 
         .smart-mode {
-            background: rgba(127, 178, 229, 0.10);
+            background: rgba(231, 84, 128, 0.06);
             border: none;
             border-radius: 0;
             padding: 20px;
@@ -566,7 +566,7 @@ body::after {
             text-align: center;
             cursor: pointer;
             transition: all 0.4s ease;
-            background: rgba(127, 178, 229, 0.10);
+            background: rgba(231, 84, 128, 0.06);
             position: relative;
             overflow: hidden;
         }
@@ -587,7 +587,7 @@ body::after {
 
         .upload-area:hover, .upload-area.dragover {
             border-color: var(--accent-cyan);
-            background: rgba(143, 194, 238, 0.14);
+            background: rgba(255, 143, 179, 0.08);
             box-shadow: 0 0 40px var(--glow-cyan), inset 0 0 60px rgba(255, 143, 179, 0.05);
         }
 
@@ -791,7 +791,7 @@ body::after {
 
         .results-section .section-title { color: #2b1e24; }
         .results-section .stat-card {
-            background: #e4eef8;
+            background: #fdeef3;
             border: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
@@ -805,9 +805,9 @@ body::after {
             background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
         }
         .results-section .sort-select {
-            background: #e4eef8;
-            color: #44586e;
-            border-color: #dce8f4;
+            background: #fdeef3;
+            color: #5b4250;
+            border-color: #f3e4e9;
         }
         .results-section .candidate-card {
             background: #ffffff;
@@ -1080,7 +1080,7 @@ body::after {
         }
 
         .candidate-summary {
-            background: rgba(228, 238, 248, 0.85);
+            background: rgba(253, 238, 243, 0.85);
             border: none;
             border-radius: 0;
             padding: 18px;
@@ -1134,7 +1134,7 @@ body::after {
         }
 
         .detail-section {
-            background: rgba(228, 238, 248, 0.85);
+            background: rgba(253, 238, 243, 0.85);
             border: none;
             border-radius: 0;
             padding: 22px;
@@ -1246,7 +1246,7 @@ body::after {
         }
 
         .matched-job {
-            background: rgba(127, 178, 229, 0.18);
+            background: rgba(231, 84, 128, 0.15);
             border: none;
             padding: 6px 14px;
             border-radius: 0;
@@ -1266,7 +1266,7 @@ body::after {
         }
 
         .evaluation-section {
-            background: rgba(228, 238, 248, 0.85);
+            background: rgba(253, 238, 243, 0.85);
             border: none;
             border-radius: 0;
             padding: 22px;
@@ -1414,7 +1414,7 @@ body::after {
             width: 40px;
             height: 40px;
             border: none;
-            background: #e4eef8;
+            background: #fdeef3;
             border-radius: 0;
             font-size: 1.8rem;
             cursor: pointer;
@@ -1426,7 +1426,7 @@ body::after {
         }
 
         .modal-close:hover {
-            background: #dce8f4;
+            background: #f3e4e9;
             transform: rotate(90deg);
         }
 
@@ -1449,7 +1449,7 @@ body::after {
             padding: 8px 16px;
             border: none;
             border-radius: 0;
-            background: #e4eef8;
+            background: #fdeef3;
             color: #8a6d78;
             cursor: pointer;
             font-size: 0.85rem;
@@ -1459,7 +1459,7 @@ body::after {
         }
 
         .jd-tab:hover {
-            background: #dce8f4;
+            background: #f3e4e9;
             color: #2b1e24;
         }
 
@@ -1495,7 +1495,7 @@ body::after {
             border-radius: 0;
             font-size: 0.95rem;
             transition: all 0.3s ease;
-            background: #e4eef8;
+            background: #fdeef3;
             color: #2b1e24;
             font-family: 'Noto Sans SC', sans-serif;
         }
@@ -1571,7 +1571,7 @@ body::after {
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 0; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
     
-/* ========== 简历速析 · Resume Analyzer（粉蓝系，容器隔离） ========== */
+/* ========== 简历速析 · Resume Analyzer（粉色系，容器隔离） ========== */
 
   
   
@@ -1657,7 +1657,7 @@ body::after {
 <header class="app-header">
   <div>
     <div class="app-title">简历筛选与速析工作台</div>
-    <div class="app-sub">智能简历筛选系统 · 简历速析 Resume Analyzer · 粉蓝主题合并版</div>
+    <div class="app-sub">智能简历筛选系统 · 简历速析 Resume Analyzer · 粉色主题合并版</div>
   </div>
   <nav class="tab-nav">
     <button class="tab-btn" data-tool="bjak">智能简历筛选</button>
@@ -2217,7 +2217,7 @@ if (window.pdfjsLib) {
             for (var i = 1; i <= pdf.numPages; i++) {
                 var page = await pdf.getPage(i);
                 var textContent = await page.getTextContent();
-                fullText += textContent.items.map(function(item) { return item.str; }).join(' ') + '\n';
+                fullText += pdfItemsToLines(textContent.items).join('\n') + '\n';
             }
             return fullText;
         }
@@ -2232,11 +2232,19 @@ if (window.pdfjsLib) {
             var lines = text.split('\n').filter(function(l) { return l.trim(); });
             var chineseNamePattern = /^[\u4e00-\u9fa5]{2,4}/;
             var englishNamePattern = /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/;
+            var stopPattern = /^(个人简历|简历|求职|姓名|个人信息|基本信息|联系方式|电话|手机|邮箱|籍贯|出生|年龄|性别|地址|专业|学历|求职意向|目标|意向|工作经历|教育经历|项目经历|自我评价|专业技能|实习经历|科研|论文|教育背景|培训经历|在校经历|主修课程|技能证书|荣誉|获奖|研究方向|研究兴趣|研究领域|主要|目前|现在|时间|期望|薪资|到岗|政治面貌|居住地|民族|婚姻|最高学历|在职|语言|工作年限|上海|北京|广州|深圳|杭州|南京|武汉|成都|重庆|天津|苏州|西安|长沙|青岛|大连|厦门|宁波|合肥|福州|济南|昆明|哈尔滨|长春|沈阳|无锡|郑州|东莞|佛山|珠海|中山|惠州|温州|嘉兴|常州|南通|徐州|扬州|绍兴|台州|洛阳|襄阳|宜昌|柳州|桂林|澳门|香港|台北|高雄|三亚|海口)/;
+            var m = text.match(/姓名\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/);
+            if (m) return m[1];
+            m = text.match(/(?:Name|名字)\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/i);
+            if (m) return m[1];
             for (var i = 0; i < Math.min(10, lines.length); i++) {
                 var line = lines[i].trim();
-                var cnMatch = line.match(chineseNamePattern);
-                if (cnMatch && cnMatch[0].length >= 2 && cnMatch[0].length <= 4) return cnMatch[0];
-                var enMatch = line.match(englishNamePattern);
+                var clean = line.replace(/^[\s]*[•·▪●▸►\-*—>＞]+\s*/, '').replace(/^\d+[.、)）]\s*/, '').trim();
+                var cnMatch = clean.match(chineseNamePattern);
+                if (cnMatch && cnMatch[0].length >= 2 && cnMatch[0].length <= 4 && !stopPattern.test(cnMatch[0]) && !/(大学|学院|中学|学校|公司|集团)$/.test(cnMatch[0])) return cnMatch[0];
+                var spMatch = clean.match(/^([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])(?=\s|\d|$|[:：]|,|，)/);
+                if (spMatch && !stopPattern.test(spMatch[1] + spMatch[2])) return spMatch[1] + spMatch[2];
+                var enMatch = clean.match(englishNamePattern);
                 if (enMatch) return enMatch[1];
             }
             return lines[0] ? lines[0].substring(0, 20) : '未知候选人';
@@ -2919,7 +2927,7 @@ function extractName(text){
   m=text.match(/(?:Name|名字)\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/i);
   if(m)return m[1];
   const lines=text.split(/\r?\n/);
-  const stop=/^(简历|个人简历|求职|姓名|电话|手机|邮箱|籍贯|出生|年龄|性别|地址|专业|学历|求职意向|目标|意向|工作经历|教育经历|项目经历|自我评价|专业技能|实习经历|科研|论文)/;
+  const stop=/^(简历|个人简历|求职|姓名|个人信息|基本信息|联系方式|电话|手机|邮箱|籍贯|出生|年龄|性别|地址|专业|学历|求职意向|目标|意向|工作经历|教育经历|项目经历|自我评价|专业技能|实习经历|科研|论文|教育背景|培训经历|在校经历|主修课程|技能证书|荣誉|获奖|研究方向|研究兴趣|研究领域|主要|目前|现在|时间|期望|薪资|到岗|政治面貌|居住地|民族|婚姻|最高学历|在职|语言|工作年限|上海|北京|广州|深圳|杭州|南京|武汉|成都|重庆|天津|苏州|西安|长沙|青岛|大连|厦门|宁波|合肥|福州|济南|昆明|哈尔滨|长春|沈阳|无锡|郑州|东莞|佛山|珠海|中山|惠州|温州|嘉兴|常州|南通|徐州|扬州|绍兴|台州|洛阳|襄阳|宜昌|柳州|桂林|澳门|香港|台北|高雄|三亚|海口)/;
   for(let i=0;i<Math.min(10,lines.length);i++){
     let l=lines[i].trim();
     if(!l)continue;
@@ -2927,9 +2935,12 @@ function extractName(text){
     let clean=l.replace(/^[\s]*[•·▪●▸►\-*—>＞]+\s*/,"").replace(/^\d+[.、)）]\s*/,"").trim();
     // 整行纯中文 2-4 字
     if(/^[\u4e00-\u9fa5]{2,4}$/.test(clean)&&!stop.test(clean))return clean;
-    // 混排：行首 2-4 个中文后跟分隔符（姓名 + 联系方式同行）
+    // PDF 排版把姓名拆成"姓 名"（如"黄 迅 177…"）：单字+空格+单字，后跟空格/数字/行尾
+    const sp=clean.match(/^([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])(?=\s|\d|$|[:：]|,|，)/);
+    if(sp&&!stop.test(sp[1]+sp[2]))return sp[1]+sp[2];
+    // 混排：行首 2-4 个中文后跟分隔符（姓名 + 联系方式同行）；排除校名截断（如"浙江大学 2020"）
     const mm=clean.match(/^([\u4e00-\u9fa5]{2,4})(?=[\s|｜,，:：]|$)/);
-    if(mm&&!stop.test(mm[1]))return mm[1];
+    if(mm&&!stop.test(mm[1])&&!/(大学|学院|中学|学校|公司|集团)$/.test(mm[1]))return mm[1];
   }
   m=text.match(/([a-z]{3,15})@/i);
   if(m)return m[1];
@@ -2976,6 +2987,9 @@ function detectSchool(text){
 }
 
 /* ============ 条目解析 ============ */
+function isLoneDate(s){
+  return /^(20\d{2}|19\d{2})\s*[.\-\/年]?\s*\d{0,2}\s*月?[\s.]*$/.test(s.trim());
+}
 function parseEntries(text){
   const lines=text.split(/\r?\n/);
   const entries=[];let cur=null;
@@ -2983,6 +2997,25 @@ function parseEntries(text){
   for(let i=0;i<lines.length;i++){
     const line=lines[i].trim();
     let r=line?extractRange(line):null;
+    // 两栏/碎片布局：孤立开始时间行 + 下一行 "-" / "至今" / 另一孤立时间 → 合并为一段
+    if(!r&&line&&isLoneDate(line)&&i+1<lines.length){
+      const nx=lines[i+1].trim();
+      if(/^[-–—~～]{1,3}\s*$/.test(nx)||/^(至今|今|现在|目前|present|current|now)\s*$/i.test(nx)||isLoneDate(nx)){
+        const merged=/^[-–—~～]{1,3}\s*$/.test(nx)?line+" - ":(line+" - "+nx);
+        r=merged?extractRange(merged):null;
+        if(r){i++;}
+      }
+    }
+    // 日期开头行 + 相邻行孤立 "-"（如"2007.08 项目名" 下一行 "-"）
+    if(!r&&line&&i+1<lines.length){
+      const nx=lines[i+1].trim();
+      const dp=line.match(/^(20\d{2}|19\d{2})\s*[.\-\/年]?\s*\d{0,2}\s*月?/);
+      if(dp&&(/^[-–—~～]{1,3}\s*$/.test(nx)||/^(至今|今|现在|目前|present|current|now)\s*$/i.test(nx))){
+        const merged=dp[0]+" - "+(/^[-–—~～]{1,3}\s*$/.test(nx)?"":nx);
+        r=extractRange(merged);
+        if(r){i++;}
+      }
+    }
     if(r){
       flush();
       const before=line.slice(0,r.idx);
@@ -3486,7 +3519,7 @@ function pdfItemsToLines(items){
     // 记录文本项宽度：日期常被拆成 "2026" ".0" "8" 等片段，拼接时靠间隙判断是否加空格
     row.cells.push({x,str:it.str,w:it.width||(it.str.length*6)});
   });
-  rows.sort((a,b)=>b.y-a.y);
+  rows.sort((a,b)=>a.y-b.y);
   return rows.map(r=>{
     const cells=r.cells.sort((a,b)=>a.x-b.x);
     let s=cells[0].str,prevX=cells[0].x+cells[0].w;
