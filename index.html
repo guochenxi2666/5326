@@ -2212,7 +2212,7 @@ if (window.pdfjsLib) {
 
         async function parsePDF(file) {
             var arrayBuffer = await file.arrayBuffer();
-            var pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            var pdf = await pdfjsLib.getDocument({ data: arrayBuffer, cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/cmaps/', cMapPacked: true }).promise;
             var fullText = '';
             for (var i = 1; i <= pdf.numPages; i++) {
                 var page = await pdf.getPage(i);
@@ -3075,7 +3075,7 @@ function detectCandidateType(text,entries){
   else if(notGraduated||stillStudyingText){isFresher=true;}
   else if(hasFutureYear&&degreeSignal){isFresher=true;}
   else{isFresher=!hasFulltime&&internCount>0;}
-  return {isFresher,internCount,internMonths,gradM,stillStudying};
+  return {isFresher,internCount,internMonths,gradM,stillStudying,eduParsingWarning:eduEntries.length===0};
 }
 
 function analyzeTitleTrajectory(workEntries){
@@ -3270,6 +3270,7 @@ function analyzeOne(text){
   if(!direction)direction="未识别（需人工补）";
 
   const risks=[];
+  if(ctype.eduParsingWarning)risks.push({t:"warn",m:"教育经历解析可能异常（未识别到学历条目），身份判定仅供参考，建议人工核对PDF"});
   if(degree.level<2)risks.push({t:"r",m:"学历低于本科（"+degree.degree+"）"});
   if(degree.fulltime==="否")risks.push({t:"r",m:"非全日制学历（在职/函授/自考等）"});
   if(coherence==="D")risks.push({t:"r",m:"简历时间线严重缺失/混乱"});
@@ -3535,7 +3536,7 @@ function pdfItemsToLines(items){
 }
 async function extractPdfText(buf){
   const lib=await ensurePdfLib();
-  const doc=await lib.getDocument({data:buf}).promise;
+  const doc=await lib.getDocument({data:buf, cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/', cMapPacked:true}).promise;
   let lines=[];
   for(let i=1;i<=doc.numPages;i++){
     const page=await doc.getPage(i);
