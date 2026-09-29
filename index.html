@@ -1646,6 +1646,11 @@ body::after {
   .b-d{background:var(--bad-soft);color:var(--bad)}
   .pill-pass{background:var(--good-soft);color:var(--good)}
   .pill-fail{background:var(--bad-soft);color:var(--bad)}
+  .conf-badge{display:inline-block;font-size:10px;font-weight:700;padding:0 6px;border-radius:10px;line-height:1.7;margin-left:4px;vertical-align:middle}
+  .conf-低{background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad)}
+  .conf-中{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn)}
+  .conf-高{background:var(--good-soft);color:var(--good)}
+  .age-miss{color:var(--muted);font-size:11px}
   .hint{font-size:11px;color:var(--muted);margin-top:8px}
   .empty{color:var(--muted);text-align:center;padding:40px 0;font-size:13px}
   #tool-analyzer footer{margin-top:20px;font-size:11px;color:var(--muted);text-align:center}
@@ -2199,7 +2204,7 @@ if (window.pdfjsLib) {
                     content = await parseDocx(fileObj.file);
                 }
                 fileObj.content = content;
-                fileObj.candidateName = extractCandidateName(content);
+                fileObj.candidateName = extractCandidateName(content, fileObj.file.name);
                 fileObj.status = 'success';
             } catch (error) {
                 console.error('Parse error:', error);
@@ -2219,6 +2224,14 @@ if (window.pdfjsLib) {
                 var textContent = await page.getTextContent();
                 fullText += pdfItemsToLines(textContent.items).join('\n') + '\n';
             }
+            var check = isScannedText(fullText);
+            if (check.scanned) {
+                try {
+                    return await ocrPdfPages(pdf, 2);
+                } catch (ocrErr) {
+                    return '【扫描件提示】该简历为扫描件，文本层提取异常（' + check.reason + '），OCR 未就绪（' + ocrErr.message + '），请人工查看。\n\n' + fullText;
+                }
+            }
             return fullText;
         }
 
@@ -2228,7 +2241,9 @@ if (window.pdfjsLib) {
             return result.value;
         }
 
-        function extractCandidateName(text) {
+        function extractCandidateName(text, fileName) {
+            var vote = nameSignalVote(text, fileName || '');
+            if (vote.name) return vote.name;
             var lines = text.split('\n').filter(function(l) { return l.trim(); });
             var chineseNamePattern = /^[\u4e00-\u9fa5]{2,4}/;
             var englishNamePattern = /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/;
@@ -2883,7 +2898,7 @@ function parseDateTok(s){
   s=s.trim();if(!s)return null;
   if(/^(至今|今|现在|目前|present|current|now)$/i.test(s))return {now:true};
   let m;
-  if(m=s.match(/^(20\d{2}|19\d{2})\s*[.\-\/年]\s*(\d{1,2})\s*月?$/))return {y:+m[1],m:+m[2]};
+  if(m=s.match(/^(20\d{2}|19\d{2})\s*[._\-\/年\s]+\s*(\d{1,2})\s*月?$/))return {y:+m[1],m:+m[2]};
   if(m=s.match(/^(20\d{2}|19\d{2})\s*年\s*(\d{1,2})\s*月?$/))return {y:+m[1],m:+m[2]};
   if(m=s.match(/^(20\d{2}|19\d{2})$/))return {y:+m[1]};
   const EM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
@@ -2894,19 +2909,19 @@ function parseDateTok(s){
 function extractRange(line){
   const EM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   let m;
-  m=line.match(/(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?/i);
+  m=line.match(/(20\d{2}|19\d{2})(\s*[._\-\/年\s]+\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(20\d{2}|19\d{2})(\s*[._\-\/年\s]+\s*\d{1,2}\s*月?)?/i);
   if(m){
     const sm=m[2]?+((m[2].match(/\d{1,2}/)||[])[0]||0):0;
     const em=m[4]?+((m[4].match(/\d{1,2}/)||[])[0]||0):0;
     return {start:sm?{y:+m[1],m:sm}:{y:+m[1]},end:em?{y:+m[3],m:em}:{y:+m[3]},idx:m.index,len:m[0].length};
   }
-  m=line.match(/(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(至今|今|现在|目前|present|current|now)/i);
+  m=line.match(/(20\d{2}|19\d{2})(\s*[._\-\/年\s]+\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(至今|今|现在|目前|present|current|now)/i);
   if(m){
     const sm=m[2]?+((m[2].match(/\d{1,2}/)||[])[0]||0):0;
     return {start:sm?{y:+m[1],m:sm}:{y:+m[1]},end:{now:true},idx:m.index,len:m[0].length};
   }
   // "2021.09-" 开始日期 + 连字符，结束为空（在读/至今）
-  m=line.match(/(20\d{2}|19\d{2})(\s*[.\-\/年]\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(?=[\s,，;；、)）]|$)/i);
+  m=line.match(/(20\d{2}|19\d{2})(\s*[._\-\/年\s]+\s*\d{1,2}\s*月?)?\s*(?:[-–—~～]{1,3}|至|到|to)\s*(?=[\s,，;；、)）]|$)/i);
   if(m){
     const sm=m[2]?+((m[2].match(/\d{1,2}/)||[])[0]||0):0;
     return {start:sm?{y:+m[1],m:sm}:{y:+m[1]},end:{now:true},idx:m.index,len:m[0].length};
@@ -2920,8 +2935,83 @@ function extractRange(line){
 }
 function toM(d){if(!d)return null;if(d.now)return nowMonths();return d.y*12+(d.m||6);}
 
-/* ============ 姓名 / 学历 / 学校 ============ */
-function extractName(text){
+/* ============ 增强：扫描件检测 / OCR 兜底 / 多信号姓名 / 年龄推算 ============ */
+const CURRENT_YEAR = 2026;
+function isScannedText(text){
+  if(!text||!text.trim())return {scanned:true,reason:"提取文本为空"};
+  const cn=(text.match(/[\u4e00-\u9fa5]/g)||[]).length;
+  const en=(text.match(/[A-Za-z]/g)||[]).length;
+  const total=text.replace(/\s/g,"").length;
+  if(total===0)return {scanned:true,reason:"提取文本为空白"};
+  const cnRatio=cn/total,enRatio=en/total;
+  // 英文为主（如纯英文简历）文本层正常，不算扫描件
+  if(cnRatio<0.05&&enRatio>=0.5)return {scanned:false,reason:""};
+  if(cnRatio<0.05)return {scanned:true,reason:"中文字符占比过低("+Math.round(cnRatio*100)+"%)"};
+  return {scanned:false,reason:""};
+}
+function ensureTesseract(){
+  return new Promise((res,rej)=>{
+    const boot=()=>{
+      try{
+        window.Tesseract.createWorker('chi_sim+eng',1,{
+          workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@4.1.3/dist/worker.min.js',
+          corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@4.0.2/tesseract-core.wasm.js',
+          langPath:'https://tessdata.projectnaptha.com/4.0.0'
+        }).then(w=>res(w)).catch(rej);
+      }catch(e){rej(e);}
+    };
+    if(window.Tesseract)return boot();
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.3/dist/tesseract.min.js";
+    s.onload=boot;
+    s.onerror=()=>rej(new Error("Tesseract.js CDN 加载失败"));
+    document.head.appendChild(s);
+  });
+}
+async function ocrPdfPages(pdf,scale){
+  const worker=await ensureTesseract();
+  const parts=[];
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const vp=page.getViewport({scale:scale||2});
+    const canvas=document.createElement("canvas");
+    canvas.width=vp.width;canvas.height=vp.height;
+    const ctx=canvas.getContext("2d");
+    await page.render({canvasContext:ctx,viewport:vp}).promise;
+    const r=await worker.recognize(canvas.toDataURL("image/png"));
+    parts.push(r.data.text);
+  }
+  return parts.join("\n");
+}
+function cleanFileNameForName(fileName){
+  if(!fileName)return "";
+  let base=fileName.replace(/\.(pdf|docx?|txt|md|markdown)$/i,"");
+  base=base.replace(/(简历|个人简历|求职简历|resume|CV|个人|最新|副本|final|Final|正式|初稿|定稿|备份|copy|Copy|应聘|测试|新建|未命名|\(|\)|（|）)/g," ").replace(/[-_—–~～]/g," ").replace(/\s+/g," ").trim();
+  const cn=base.match(/[\u4e00-\u9fa5]{2,4}/g);
+  if(cn)return cn[0];
+  const py=base.match(/^[a-z]{2,20}/i);
+  if(py)return py[0].toLowerCase();
+  return "";
+}
+function extractEmailPrefixName(text){
+  const m=text.match(/([A-Za-z][A-Za-z0-9._-]{2,30})@/i);
+  return m?m[1].split(/[._-]/)[0].toLowerCase():"";
+}
+function extractEnglishNameField(text){
+  let m=text.match(/(?:Name|名字|英文名|English\s*Name)\s*[:：]?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/i);
+  if(m)return m[1];
+  return "";
+}
+function extractEnglishNameHead(text){
+  const lines=text.split(/\r?\n/);
+  for(let i=0;i<Math.min(6,lines.length);i++){
+    const l=lines[i].trim();
+    const m=l.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    if(m&&!/^(Resume|CV|Name|Phone|Email|Tel|Address|Date|Summary|Objective|Contact)/i.test(m[1]))return m[1];
+  }
+  return "";
+}
+function extractHeadName(text){
   let m=text.match(/姓名\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/);
   if(m)return m[1];
   m=text.match(/(?:Name|名字)\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/i);
@@ -2931,20 +3021,77 @@ function extractName(text){
   for(let i=0;i<Math.min(10,lines.length);i++){
     let l=lines[i].trim();
     if(!l)continue;
-    // 去掉 bullet / 序号前缀
     let clean=l.replace(/^[\s]*[•·▪●▸►\-*—>＞]+\s*/,"").replace(/^\d+[.、)）]\s*/,"").trim();
-    // 整行纯中文 2-4 字
     if(/^[\u4e00-\u9fa5]{2,4}$/.test(clean)&&!stop.test(clean))return clean;
-    // PDF 排版把姓名拆成"姓 名"（如"黄 迅 177…"）：单字+空格+单字，后跟空格/数字/行尾
     const sp=clean.match(/^([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])(?=\s|\d|$|[:：]|,|，)/);
     if(sp&&!stop.test(sp[1]+sp[2]))return sp[1]+sp[2];
-    // 混排：行首 2-4 个中文后跟分隔符（姓名 + 联系方式同行）；排除校名截断（如"浙江大学 2020"）
     const mm=clean.match(/^([\u4e00-\u9fa5]{2,4})(?=[\s|｜,，:：]|$)/);
     if(mm&&!stop.test(mm[1])&&!/(大学|学院|中学|学校|公司|集团)$/.test(mm[1]))return mm[1];
   }
-  m=text.match(/([a-z]{3,15})@/i);
-  if(m)return m[1];
   return "";
+}
+function nameSignalVote(text,fileName){
+  const signals=[];
+  const push=(k,v)=>{if(v)signals.push(k+":"+v);};
+  let s1="",m=text.match(/姓名\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/);
+  if(m)s1=m[1];
+  if(!s1){m=text.match(/(?:Name|名字)\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/i);if(m)s1=m[1];}
+  if(s1)push("显式姓名",s1);
+  const s2=cleanFileNameForName(fileName);
+  if(s2)push("文件名",s2);
+  const s3=extractEmailPrefixName(text);
+  if(s3)push("邮箱前缀",s3);
+  const s4=extractEnglishNameField(text)||extractEnglishNameHead(text);
+  if(s4)push("英文名",s4);
+  const s5=extractHeadName(text);
+  if(s5)push("头部文本",s5);
+  const cnCands={};
+  [s1,s2,s5].forEach(c=>{if(/^[\u4e00-\u9fa5]{2,4}$/.test(c))cnCands[c]=(cnCands[c]||0)+1;});
+  let best="",bestN=0;
+  Object.keys(cnCands).forEach(k=>{if(cnCands[k]>bestN){best=k;bestN=cnCands[k];}});
+  let name="",conf="低",notes=[];
+  if(s1){name=s1;conf="高";}
+  else if(best&&bestN>=2){name=best;conf="高";}
+  else if(best){name=best;conf=bestN===2?"高":"中";}
+  else if(s5){name=s5;conf="中";}
+  else if(s2){name=s2;conf="中";}
+  else if(s4){name="";conf="低";notes.push("仅英文名区域，无法确认中文姓名");}
+  else if(s3){name="";conf="低";notes.push("仅邮箱前缀，无法确认中文姓名");}
+  else{name="";conf="低";notes.push("未识别到姓名信号");}
+  const allCn=[s1,s2,s5].filter(c=>/^[\u4e00-\u9fa5]{2,4}$/.test(c));
+  const uniq=[...new Set(allCn)];
+  if(uniq.length>1)notes.push("信号不一致："+uniq.join(" / "));
+  if(!signals.length)notes.push("无可用信号");
+  return {name,conf,signals,notes};
+}
+function inferAge(text,entries){
+  let m=text.match(/(?:出生|生日|出生日期|出生年月|出生时间)\s*[:：]?\s*(\d{4})\s*[.\-\/年]?\s*(\d{1,2})?\s*月?/);
+  if(m){
+    const by=+m[1],bm=m[2]?+m[2]:null;
+    let age=CURRENT_YEAR-by;
+    if(bm!=null&&bm>9)age--; // 当前2026-09，10月后生日未满周岁
+    return {age,source:"出生日期("+by+(bm?"."+bm:"")+")",conf:"高"};
+  }
+  m=text.match(/(\d{1,2})\s*岁/);
+  if(m)return {age:+m[1],source:"简历明确年龄",conf:"高"};
+  let bachY=null;
+  entries.forEach(e=>{
+    if(e.range&&classify(e.title,e.body)==="edu"&&eduLevelOf(e.title,e.body)===2){
+      const y=e.range.start?e.range.start.y:null;
+      if(y&&(bachY==null||y<bachY))bachY=y;
+    }
+  });
+  if(!bachY){
+    m=text.match(/(20\d{2}|19\d{2})\s*[._\-\/年\s]*\s*\d{0,2}\s*月?\s*[-–—~～至到]{1,3}[^\n]{0,10}(本科|学士|Bachelor)/i);
+    if(m)bachY=+m[1];
+  }
+  if(bachY){const by=bachY-18;return {age:CURRENT_YEAR-by,source:"本科入学年("+bachY+")-18推算",conf:"中"};}
+  return {age:null,source:"",conf:"低"};
+}
+
+/* ============ 姓名 / 学历 / 学校 ============ */
+function extractName(text,fileName){
+  return nameSignalVote(text,fileName).name;
 }
 function detectDegree(text){
   const degs=[];
@@ -3020,7 +3167,20 @@ function parseEntries(text){
       flush();
       const before=line.slice(0,r.idx);
       const after=line.slice(r.idx+r.len);
-      const title=(before+" "+after).replace(/[\/|｜:：\-–—]+/g," ").replace(/\s+/g," ").trim();
+      let title=(before+" "+after).replace(/[\/|｜:：\-–—]+/g," ").replace(/\s+/g," ").trim();
+      // 纯时间行（如"2021.09-"独占一行）→ 与上一标题行合并，避免标题丢失导致学历误判
+      if(!title&&i>0){
+        const prev=lines[i-1].trim();
+        const bulletRe=/^[•·▪●▸►\-*>＞\s]|^[(（]?\d+[)）]/;
+        if(prev&&!extractRange(prev)&&!bulletRe.test(prev)&&prev.length<100){
+          const merged=prev+" "+line;
+          const mr=extractRange(merged);
+          if(mr){
+            title=(merged.slice(0,mr.idx)+" "+merged.slice(mr.idx+mr.len)).replace(/[\/|｜:：\-–—]+/g," ").replace(/\s+/g," ").trim();
+            r=mr;
+          }
+        }
+      }
       cur={title,range:{start:r.start,end:r.end},body:[],lineNo:i};
     }else if(cur){cur.body.push(lines[i]);}
   }
@@ -3120,6 +3280,9 @@ function analyzeTitleTrajectory(workEntries){
 
 function eduLevelOf(title,body){
   const t=title+" "+(body||[]).join(" ");
+  if(/博士|PhD|Ph\.D|Doctor/i.test(title))return 4;
+  if(/硕士|研究生|Master/i.test(title))return 3;
+  if(/本科|学士|Bachelor/i.test(title))return 2;
   if(/博士|PhD|Ph\.D|Doctor/i.test(t))return 4;
   if(/硕士|研究生|Master/i.test(t))return 3;
   if(/本科|学士|Bachelor/i.test(t))return 2;
@@ -3161,11 +3324,13 @@ function analyzeEduContinuity(entries){
 }
 
 /* ============ 主分析 ============ */
-function analyzeOne(text){
-  const name=extractName(text);
+function analyzeOne(text,fileName){
+  const nv=nameSignalVote(text,fileName);
+  const name=nv.name,nameConf=nv.conf;
   const degree=detectDegree(text);
   const school=detectSchool(text);
   const entries=parseEntries(text);
+  const ageInfo=inferAge(text,entries);
   const isPhD=degree.level>=4;
 
   const workEntries=entries.filter(e=>classify(e.title,e.body)==="work");
@@ -3270,6 +3435,11 @@ function analyzeOne(text){
   if(!direction)direction="未识别（需人工补）";
 
   const risks=[];
+  if(nameConf==="低"&&name)risks.push({t:"warn",m:"姓名识别置信度低（信号不一致："+(nv.signals.join(" / ")||"无")+"），该字段可能异常，建议人工确认"});
+  if(nameConf==="低"&&!name)risks.push({t:"warn",m:"姓名未识别（无可用信号或仅邮箱/英文名），该字段可能异常，建议人工确认"});
+  if(nameConf==="中")risks.push({t:"tip",m:"姓名识别置信度中（信号："+(nv.signals.join(" / ")||"无")+"），建议快速核对"});
+  if(ageInfo.age==null)risks.push({t:"tip",m:"简历未提供年龄（未识别到出生日期 / 岁数 / 本科入学年），未做推算"});
+  else if(ageInfo.conf==="中")risks.push({t:"tip",m:"年龄为推算值（"+ageInfo.source+"），仅供参考，建议人工确认"});
   if(ctype.eduParsingWarning)risks.push({t:"warn",m:"教育经历解析可能异常（未识别到学历条目），身份判定仅供参考，建议人工核对PDF"});
   if(degree.level<2)risks.push({t:"r",m:"学历低于本科（"+degree.degree+"）"});
   if(degree.fulltime==="否")risks.push({t:"r",m:"非全日制学历（在职/函授/自考等）"});
@@ -3287,7 +3457,7 @@ function analyzeOne(text){
   if(isFresher)risks.push({t:"ok",m:"学生身份：跳槽频繁与空窗不适用，重点看实习含金量、论文成果与毕业时间"});
   if(!risks.length)risks.push({t:"ok",m:"未发现明显红线，可推进"});
 
-  return {name,degree,school,avgTenure,workCount:workRanges.length,stability,stabilityNote,coherence,coherenceIssues,maxGap,gaps,totalPapers,firstAuthor,venueCount,direction,risks,entryCount:entries.length,isPhD,isFresher,internCount:ctype.internCount,internMonths:ctype.internMonths,gradM:ctype.gradM,stillStudying:ctype.stillStudying,titleTraj,eduCont};
+  return {name,nameConf,nameSignals:nv.signals,nameNotes:nv.notes,age:ageInfo.age,ageSource:ageInfo.source,ageConf:ageInfo.conf,degree,school,avgTenure,workCount:workRanges.length,stability,stabilityNote,coherence,coherenceIssues,maxGap,gaps,totalPapers,firstAuthor,venueCount,direction,risks,entryCount:entries.length,isPhD,isFresher,internCount:ctype.internCount,internMonths:ctype.internMonths,gradM:ctype.gradM,stillStudying:ctype.stillStudying,titleTraj,eduCont};
 }
 
 /* ============ 维度构建 ============ */
@@ -3416,10 +3586,12 @@ function render(results,meta){
   const box=document.getElementById("results");
   document.getElementById("resultMeta").textContent=meta;
   if(!results.length){box.innerHTML='<div class="empty">未解析出候选人，请检查分隔符或文本格式。</div>';return;}
-  let html='<div class="panel" style="padding:0;overflow:auto"><table class="summary-table"><thead><tr><th>姓名</th><th>身份</th><th>学历</th><th>学校层次</th><th>稳定性/密度</th><th>平均任期</th><th>连贯性</th><th>最长空窗</th><th>顶会</th><th>一作</th><th>研究方向(20字)</th><th>硬过滤</th></tr></thead><tbody>';
+  let html='<div class="panel" style="padding:0;overflow:auto"><table class="summary-table"><thead><tr><th>姓名</th><th>年龄</th><th>身份</th><th>学历</th><th>学校层次</th><th>稳定性/密度</th><th>平均任期</th><th>连贯性</th><th>最长空窗</th><th>顶会</th><th>一作</th><th>研究方向(20字)</th><th>硬过滤</th></tr></thead><tbody>';
   results.forEach(r=>{
     const pass=hardFilter(r);
-    html+='<tr><td><b>'+esc(r.name||"未识别")+'</b></td><td>'+(r.isFresher?'<span class="badge b-b">学生</span>':'社招')+'</td><td>'+esc(r.degree.degree)+'</td><td>'+esc(TIER_LABEL[r.school.tier])+'</td><td>'+badge(r.stability)+'</td><td>'+(r.avgTenure?Math.round(r.avgTenure/12*10)/10+"年":"—")+'</td><td>'+badge(r.coherence)+'</td><td>'+(r.isFresher?"—":(r.maxGap?fmtMon(r.maxGap):"0"))+'</td><td>'+r.totalPapers+'</td><td>'+r.firstAuthor+'</td><td>'+esc(r.direction)+'</td><td>'+pass.html+'</td></tr>';
+    const confBadge=r.nameConf==="高"?"":('<span class="conf-badge conf-'+r.nameConf+'">'+r.nameConf+'置信</span>');
+    const ageCell=r.age!=null?(r.age+"岁"+(r.ageConf==="中"?'<span class="conf-badge conf-中">推算</span>':'')):'<span class="age-miss">未提供</span>';
+    html+='<tr><td><b>'+esc(r.name||"未识别")+'</b>'+confBadge+'</td><td>'+ageCell+'</td><td>'+(r.isFresher?'<span class="badge b-b">学生</span>':'社招')+'</td><td>'+esc(r.degree.degree)+'</td><td>'+esc(TIER_LABEL[r.school.tier])+'</td><td>'+badge(r.stability)+'</td><td>'+(r.avgTenure?Math.round(r.avgTenure/12*10)/10+"年":"—")+'</td><td>'+badge(r.coherence)+'</td><td>'+(r.isFresher?"—":(r.maxGap?fmtMon(r.maxGap):"0"))+'</td><td>'+r.totalPapers+'</td><td>'+r.firstAuthor+'</td><td>'+esc(r.direction)+'</td><td>'+pass.html+'</td></tr>';
   });
   html+='</tbody></table></div>';
 
@@ -3428,6 +3600,8 @@ function render(results,meta){
     const cid="radar-"+idx;
     html+='<div class="card"><div class="card-head">'+
       '<span class="name">'+esc(r.name||("候选人"+(idx+1)))+'</span>'+
+      (r.nameConf==="低"?('<span class="conf-badge conf-低">姓名低置信</span>'):'')+
+      (r.age!=null?('<span class="badge b-b">'+r.age+'岁'+(r.ageConf==="中"?"·推算":"")+'</span>'):'')+
       '<span class="badge '+(r.isFresher?'b-b':'b-a')+'">'+(r.isFresher?'学生':'社招')+'</span>'+
       '<span class="dir-chip">'+esc(r.direction)+'</span>'+
       '</div><div class="card-body">'+
@@ -3471,12 +3645,13 @@ function run(){
   const raw=document.getElementById("src").value;
   const sep=document.getElementById("sep").value||"=====";
   const parts=splitInput(raw,sep);
-  const results=parts.map(analyzeOne);
+  const names=window.__runFileNames||[];
+  const results=parts.map((p,i)=>analyzeOne(p,names[i]));
   render(results,parts.length+" 份简历 · 解析完成");
 }
 function toCsv(results){
-  const head=["姓名","最高学历","全日制","学校层次","毕业/最高院校","履历稳定性","平均任期(月)","任职段数","简历连贯性","最长空窗(月)","顶会篇数","顶会一作","研究方向20字","风险提示"];
-  const rows=results.map(r=>[r.name||"未识别",r.degree.degree,r.degree.fulltime,TIER_LABEL[r.school.tier],r.school.school,r.stability,r.avgTenure||"",r.workCount,r.coherence,r.maxGap||0,r.totalPapers,r.firstAuthor,r.direction,r.risks.filter(x=>x.t!=="ok").map(x=>x.m).join("；")]);
+  const head=["姓名","姓名置信度","年龄","年龄来源","最高学历","全日制","学校层次","毕业/最高院校","履历稳定性","平均任期(月)","任职段数","简历连贯性","最长空窗(月)","顶会篇数","顶会一作","研究方向20字","风险提示"];
+  const rows=results.map(r=>[r.name||"未识别",r.nameConf||"低",r.age!=null?r.age+"岁":"未提供",r.ageSource||"",r.degree.degree,r.degree.fulltime,TIER_LABEL[r.school.tier],r.school.school,r.stability,r.avgTenure||"",r.workCount,r.coherence,r.maxGap||0,r.totalPapers,r.firstAuthor,r.direction,r.risks.filter(x=>x.t!=="ok").map(x=>x.m).join("；")]);
   const q=v=>{const s=String(v==null?"":v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   return "\ufeff"+[head,...rows].map(row=>row.map(q).join(",")).join("\r\n");
 }
@@ -3486,6 +3661,8 @@ function toMd(results){
     lines.push("## "+(r.name||("候选人"+(i+1))));
     lines.push("");
     lines.push("| 维度 | 结果 |");lines.push("|---|---|");
+    lines.push("| 姓名 | "+r.name+"（置信度："+r.nameConf+"） |");
+    lines.push("| 年龄 | "+(r.age!=null?r.age+" 岁（"+r.ageSource+"）":"未提供，未做推算")+" |");
     lines.push("| 学历 | "+r.degree.degree+"（"+(r.degree.fulltime==="是"?"全日制":r.degree.fulltime==="否"?"非全日制":"存疑")+"） |");
     lines.push("| 学校层次 | "+TIER_LABEL[r.school.tier]+(r.school.school?" · "+r.school.school:"")+" |");
     lines.push("| 履历稳定性 | "+r.stability+" · 平均任期 "+(r.avgTenure?Math.round(r.avgTenure/12*10)/10+" 年":"—")+" · "+r.workCount+" 段 |");
@@ -3543,7 +3720,16 @@ async function extractPdfText(buf){
     const c=await page.getTextContent();
     lines=lines.concat(pdfItemsToLines(c.items),[""]);
   }
-  return lines.join("\n");
+  const text=lines.join("\n");
+  const check=isScannedText(text);
+  if(check.scanned){
+    try{
+      return await ocrPdfPages(doc,2);
+    }catch(ocrErr){
+      return "【扫描件提示】该简历为扫描件，文本层提取异常（"+check.reason+"），OCR 未就绪（"+ocrErr.message+"），请人工查看。\n\n"+text;
+    }
+  }
+  return text;
 }
 
 /* ============ 事件绑定 ============ */
@@ -3609,7 +3795,9 @@ async function readFiles(fs){
   const box=document.getElementById("results");
   box.innerHTML='<div class="loading">正在读取并解析文件…</div>';
   const out=[];
+  const names=[];
   for(const f of fs){
+    names.push(f.name);
     try{
       if(/\.pdf$/i.test(f.name)){
         const buf=await f.arrayBuffer();
@@ -3622,6 +3810,7 @@ async function readFiles(fs){
       out.push("【文件读取失败："+f.name+"】"+err.message);
     }
   }
+  window.__runFileNames=names;
   document.getElementById("src").value=out.join("\n\n=====\n\n");
   document.getElementById("countLabel").textContent=out.join("").length+" 字";
 }
